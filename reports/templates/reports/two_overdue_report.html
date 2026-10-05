@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Overdue Installments</h1>
+<div class="card">
+  <p><strong>{{ rows|length }}</strong> overdue installments, totaling <strong>₹{{ total_overdue }}</strong>.</p>
+  <table>
+    <thead><tr><th>Customer</th><th>Loan No.</th><th>Installment #</th><th>Due Date</th><th>Days Overdue</th><th>Balance</th><th></th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.installment.loan.customer.full_name }}</td>
+          <td>{{ row.installment.loan.loan_number }}</td>
+          <td>{{ row.installment.installment_number }}</td>
+          <td>{{ row.installment.due_date }}</td>
+          <td><span class="badge overdue">{{ row.days_overdue }} days</span></td>
+          <td>₹{{ row.installment.balance_amount }}</td>
+          <td><a href="{% url 'loans:detail' row.installment.loan.pk %}" class="btn small secondary">View Loan</a>
+              <a href="{% url 'documents:notice_add' row.installment.loan.pk %}?reason=Installment {{ row.installment.installment_number }} overdue by {{ row.days_overdue }} days" class="btn small secondary">Send Notice</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="7" class="muted">Nothing overdue right now.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

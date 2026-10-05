@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Payment — {{ payment.receipt_number }}</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group {% if field.name == 'remarks' %}full{% endif %}">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+    {% if payment.previous_amount %}<p class="muted">Previously edited from ₹{{ payment.previous_amount }} on {{ payment.edited_at }}.</p>{% endif %}
+    <p class="muted">Changing the amount re-applies this payment across installments from scratch.</p>
+    <button class="btn" style="margin-top:8px;">Save Changes</button>
+    <a href="{% url 'payments:detail' payment.pk %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

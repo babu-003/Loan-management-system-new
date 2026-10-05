@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Loan Management System{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div class="topbar">
+    <a href="{% url 'customers:list' %}">Loan Management System · Customers</a>
+    <a href="{% url 'loans:list' %}" style="margin-left:18px;opacity:.85;">Loans</a>
+    <a href="{% url 'payments:list' %}" style="margin-left:18px;opacity:.85;">Payments</a>
+    <div>
+      <span style="margin-right:14px; opacity:.8;">● Offline Mode</span>
+      {% if user.is_authenticated %}
+        <form method="post" action="{% url 'logout' %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn secondary" style="color:#fff;border-color:#fff;">Logout</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="container">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

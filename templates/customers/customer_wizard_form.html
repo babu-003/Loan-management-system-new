@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Add Customer</h1>
+
+<div class="steps">
+  {% for pill in step_pills %}
+    <span class="step-pill {{ pill.state }}">{{ forloop.counter }}. {{ pill.label }}</span>
+  {% endfor %}
+</div>
+<p class="muted">Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }} — {{ current_step_label }}</p>
+
+<div class="card">
+  <form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+
+    {% if wizard.form.forms %}
+      {# ---- This step is a FormSet (Reference or Documents) ---- #}
+      {{ wizard.form.management_form }}
+      {% if wizard.form.non_form_errors %}
+        <ul class="errorlist">{% for error in wizard.form.non_form_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
+      {% for subform in wizard.form.forms %}
+        <div class="formset-row">
+          <div class="form-grid">
+            {% for field in subform.visible_fields %}
+              <div class="form-group {% if field.field.widget.input_type == 'textarea' %}full{% endif %}">
+                <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                {{ field }}
+                {{ field.errors }}
+                {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      {# ---- This step is a single Form (Personal / Address / Bank) ---- #}
+      {% if wizard.form.non_field_errors %}
+        <ul class="errorlist">{% for error in wizard.form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+      {% endif %}
+      <div class="form-grid">
+        {% for field in wizard.form.visible_fields %}
+          <div class="form-group {% if field.name == 'customer_category' or field.field.widget.input_type == 'textarea' %}full{% endif %}">
+            <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+            {{ field }}
+            {{ field.errors }}
+            {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      {% if wizard.steps.prev %}
+        <button type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" class="btn secondary">Back</button>
+      {% endif %}
+      <button type="submit" class="btn">
+        {% if wizard.steps.current == wizard.steps.last %}Save Customer{% else %}Next{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

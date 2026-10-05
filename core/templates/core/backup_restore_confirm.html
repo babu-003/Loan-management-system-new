@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Restore Backup</h1>
+<div class="card" style="max-width:520px;">
+  <p><strong>You are about to restore:</strong> {{ record.filename }} (taken {{ record.created_at }}).</p>
+  <p style="color:#b91c1c;"><strong>This will replace all current data</strong> — every customer, loan, payment, and document added since this backup was taken will be lost.</p>
+  <p class="muted">A safety backup of the current state will be taken automatically first, so this can still be undone if something goes wrong.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn" style="background:#b91c1c;border-color:#b91c1c;">Yes, Restore This Backup</button>
+    <a href="{% url 'settings:backup_list' %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

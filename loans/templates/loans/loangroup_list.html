@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Loan Groups</h1>
+  <a href="{% url 'loans:group_add' %}" class="btn">+ New Group</a>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>Group ID</th><th>Name</th><th>Members</th><th>Total Payable</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for group in groups %}
+        <tr>
+          <td>{{ group.group_id }}</td>
+          <td>{{ group.group_name }}</td>
+          <td>{{ group.member_count }}</td>
+          <td>₹{{ group.total_payable }}</td>
+          <td>₹{{ group.total_outstanding }}</td>
+          <td><span class="badge {{ group.status }}">{{ group.get_status_display }}</span></td>
+          <td><a href="{% url 'loans:group_detail' group.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="7" class="muted">No groups yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

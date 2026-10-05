@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>My Profile</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button class="btn" style="margin-top:14px;">Save Changes</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;">Account Security</h2>
+  <p class="muted" style="margin-bottom:16px;">
+    Set a recovery code now. You will need this code if you forget your username or password.
+    The code is stored securely as a hash.
+  </p>
+  <form method="post" action="{% url 'accounts:set_recovery_code' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>{{ recovery_form.recovery_code.label }}</label>
+      {{ recovery_form.recovery_code }}
+      {% if recovery_form.recovery_code.help_text %}<small class="muted">{{ recovery_form.recovery_code.help_text }}</small>{% endif %}
+      {{ recovery_form.recovery_code.errors }}
+    </div>
+    <button class="btn" style="margin-top:14px;">Save Recovery Code</button>
+  </form>
+</div>
+
+<div class="card">
+  <a href="{% url 'accounts:password_change' %}" class="btn secondary">Change Password</a>
+</div>
+{% endblock %}

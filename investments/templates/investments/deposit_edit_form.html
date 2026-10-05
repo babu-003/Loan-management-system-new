@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Deposit</h1>
+<div class="card" style="max-width:420px;">
+  <p class="muted">Original amount recorded: Rs. {{ entry.amount }} on {{ entry.created_at }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group full">
+      <label>{{ form.amount.label }}</label>
+      {{ form.amount }}
+      {{ form.amount.errors }}
+    </div>
+    <p class="muted" style="margin-top:8px;">The difference will be recorded as a visible adjustment entry in the Invest Log.</p>
+    <button class="btn" style="margin-top:10px;">Save Correction</button>
+    <a href="{% url 'investments:investor_detail' entry.investor.pk %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

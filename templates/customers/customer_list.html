@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Customers</h1>
+  <a href="{% url 'customers:add' %}" class="btn">+ Add Customer</a>
+</div>
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group">
+      <label>Search (ID / Name / Mobile / Loan No.)</label>
+      {{ search_form.q }}
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      {{ search_form.status }}
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      {{ search_form.location }}
+    </div>
+    <div class="form-group">
+      <label>Created From</label>
+      {{ search_form.created_from }}
+    </div>
+    <div class="form-group">
+      <label>Created To</label>
+      {{ search_form.created_to }}
+    </div>
+    <div class="form-group" style="align-self:flex-end;">
+      <button class="btn">Filter</button>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Customer ID</th>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Location</th>
+        <th>Active Loans</th>
+        <th>Total Outstanding</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in page_obj %}
+        <tr>
+          <td>{{ customer.customer_id }}</td>
+          <td>{{ customer.full_name }}</td>
+          <td>{{ customer.mobile }}</td>
+          <td>{{ customer.permanent_city }}</td>
+          <td>{{ customer.active_loan_count }}</td>
+          <td>₹{{ customer.total_outstanding_amount }}</td>
+          <td><span class="badge {{ customer.status }}">{{ customer.get_status_display }}</span></td>
+          <td>
+            <a href="{% url 'customers:detail' customer.pk %}" class="btn small secondary">View</a>
+            <a href="{% url 'customers:edit' customer.pk %}" class="btn small secondary">Edit</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="muted">No customers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

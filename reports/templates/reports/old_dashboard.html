@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="form-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="card"><div class="muted">Active Customers</div><h2>{{ total_customers }}</h2></div>
+  <div class="card"><div class="muted">Active Loans</div><h2>{{ total_loans_active }}</h2></div>
+  <div class="card"><div class="muted">Completed Loans</div><h2>{{ total_loans_completed }}</h2></div>
+  <div class="card"><div class="muted">Total Invested (Pool Balance)</div><h2>₹{{ total_invested }}</h2></div>
+  <div class="card"><div class="muted">Total Principal Disbursed</div><h2>₹{{ total_principal_disbursed }}</h2></div>
+
+  <div class="card"><div class="muted">Total Outstanding</div><h2>₹{{ total_outstanding }}</h2></div>
+  <div class="card"><div class="muted">Collected (This Month)</div><h2>₹{{ total_collected_this_month }}</h2></div>
+  <div class="card"><div class="muted">Collected (All Time)</div><h2>₹{{ total_collected_all_time }}</h2></div>
+ 
+
+  <div class="card">
+    <div class="muted">Overdue Installments</div>
+    <h2 style="color:#b91c1c;">{{ overdue_count }}</h2>
+    <div class="muted">₹{{ overdue_amount }} overdue</div>
+    <a href="{% url 'reports:overdue' %}" class="btn small secondary" style="margin-top:8px;">View</a>
+  </div>
+  <div class="card">
+    <div class="muted">Due in Next 7 Days</div>
+    <h2>{{ upcoming_count }}</h2>
+    <div class="muted">₹{{ upcoming_amount }} due</div>
+  </div>
+  <div class="card">
+    <div class="muted">Collections</div>
+    <a href="{% url 'reports:collections' %}" class="btn small secondary" style="margin-top:8px;">View Report</a>
+  </div>
+</div>
+{% endblock %}

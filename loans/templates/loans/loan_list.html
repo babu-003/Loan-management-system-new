@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Loans</h1>
+  <div>
+    <a href="{% url 'loans:group_list' %}" class="btn secondary">Loan Groups</a>
+    <a href="{% url 'loans:calculator' %}" class="btn secondary">Loan Calculator</a>
+    <a href="{% url 'loans:add' %}" class="btn">+ New Loan</a>
+  </div>
+</div>
+
+<div class="stat-row animated" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card">
+    <div class="stat-label">Total Loans</div>
+    <div class="stat-value">{{ total_loans }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Active</div>
+    <div class="stat-value">{{ active_count }}</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="stat-label">Outstanding (Active Loans)</div>
+    <div class="stat-value">₹{{ total_outstanding }}</div>
+  </div>
+</div>
+
+{% if donut_segments %}
+<div class="card">
+  <h3>Portfolio by Status</h3>
+  <div class="donut-wrap">
+    <div class="donut-chart" style="position:relative;width:150px;height:150px;">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="{{ donut_radius }}" fill="none" stroke="var(--color-bg)" stroke-width="16"/>
+        {% for seg in donut_segments %}
+          <circle class="segment" cx="75" cy="75" r="{{ donut_radius }}" fill="none"
+                  stroke="{{ seg.color }}" stroke-width="16"
+                  stroke-dasharray="{{ seg.dasharray }}" stroke-dashoffset="{{ seg.dashoffset }}"
+                  stroke-linecap="butt"/>
+        {% endfor %}
+      </svg>
+      <div class="donut-center-label" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+        <div class="value">{{ total_loans }}</div>
+        <div class="label">Total</div>
+      </div>
+    </div>
+    <div class="donut-legend">
+      {% for seg in donut_segments %}
+        <div class="donut-legend-item">
+          <span class="donut-swatch" style="background:{{ seg.color }};"></span>
+          {{ seg.label }} <span class="count">{{ seg.count }}</span>
+          <span class="muted">({{ seg.percent }}%)</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group"><label>{{ search_form.q.label }}</label>{{ search_form.q }}</div>
+    <div class="form-group"><label>Status</label>{{ search_form.status }}</div>
+    <div class="form-group"><label>Loan Type</label>{{ search_form.loan_type }}</div>
+    <div class="form-group" style="align-self:flex-end;"><button class="btn">Filter</button></div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Loan No.</th><th>Customer</th><th>Group</th><th>Principal</th><th>Total Payable</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in page_obj %}
+        <tr>
+          <td>{{ loan.loan_number }}</td>
+          <td>
+            <div class="name-cell">
+              <div class="avatar">{{ loan.customer.full_name|slice:":1" }}</div>
+              {{ loan.customer.full_name }}
+            </div>
+          </td>
+          <td>{% if loan.loan_group %}{{ loan.loan_group.group_id }}{% else %}<span class="muted">Individual</span>{% endif %}</td>
+          <td>₹{{ loan.principal_amount }}</td>
+          <td>₹{{ loan.total_payable }}</td>
+          <td>₹{{ loan.total_outstanding }}</td>
+          <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+          <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-state-icon">📄</div>
+            <p>No loans yet.</p>
+            <a href="{% url 'loans:add' %}" class="btn small">+ Create your first loan</a>
+          </div>
+        </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

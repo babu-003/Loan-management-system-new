@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Settings</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <h3>Company Details</h3>
+    <div class="form-grid">
+      {% for field in form %}
+        {% if field.name in "company_name,company_phone,company_email" %}
+          <div class="form-group"><label>{{ field.label }}</label>{{ field }}{{ field.errors }}</div>
+        {% endif %}
+      {% endfor %}
+      <div class="form-group full"><label>{{ form.company_address.label }}</label>{{ form.company_address }}{{ form.company_address.errors }}</div>
+      <div class="form-group"><label>{{ form.currency_symbol.label }}</label>{{ form.currency_symbol }}{{ form.currency_symbol.errors }}</div>
+      <div class="form-group">
+        <label>{{ form.date_format.label }}</label>
+        {{ form.date_format }}{{ form.date_format.errors }}
+        <small class="muted">{{ form.date_format.help_text }}</small>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px;">ID Number Formats</h3>
+    <p class="muted">Only affects newly generated IDs going forward — existing records keep the IDs they already have.</p>
+    <div class="form-grid">
+      <div class="form-group"><label>Customer ID Prefix</label>{{ form.customer_id_prefix }}{{ form.customer_id_prefix.errors }}</div>
+      <div class="form-group"><label>Loan ID Prefix</label>{{ form.loan_id_prefix }}{{ form.loan_id_prefix.errors }}</div>
+      <div class="form-group"><label>Loan Group ID Prefix</label>{{ form.group_id_prefix }}{{ form.group_id_prefix.errors }}</div>
+      <div class="form-group"><label>Receipt No. Prefix</label>{{ form.receipt_id_prefix }}{{ form.receipt_id_prefix.errors }}</div>
+      <div class="form-group">
+        <label>{{ form.id_number_padding.label }}</label>
+        {{ form.id_number_padding }}{{ form.id_number_padding.errors }}
+        <small class="muted">{{ form.id_number_padding.help_text }}</small>
+      </div>
+    </div>
+
+    <button class="btn" style="margin-top:16px;">Save Settings</button>
+  </form>
+</div>
+{% endblock %}

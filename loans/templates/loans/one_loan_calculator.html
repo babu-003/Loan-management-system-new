@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan Calculator</h1>
+<p class="muted">A what-if tool — nothing here is saved. Enter the terms once and see both Flat and Reducing Balance results side by side.</p>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button class="btn" style="margin-top:12px;">Calculate</button>
+  </form>
+</div>
+
+{% if result %}
+<div class="form-grid" style="grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card">
+    <h3>Flat Interest</h3>
+    <p><strong>Total Interest:</strong> ₹{{ result.flat_total_interest }}</p>
+    <p><strong>Total Payable:</strong> ₹{{ result.flat_total_payable }}</p>
+    <table>
+      <thead><tr><th>#</th>{% if result.flat_schedule.0.due_date %}<th>Due Date</th>{% endif %}<th>Principal</th><th>Interest</th><th>Amount</th></tr></thead>
+      <tbody>
+        {% for row in result.flat_schedule %}
+          <tr>
+            <td>{{ row.number }}</td>
+            {% if row.due_date %}<td>{{ row.due_date }}</td>{% endif %}
+            <td>₹{{ row.principal }}</td>
+            <td>₹{{ row.interest }}</td>
+            <td>₹{{ row.amount }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Reducing Balance</h3>
+    <p><strong>Total Interest:</strong> ₹{{ result.reducing_total_interest }}</p>
+    <p><strong>Total Payable:</strong> ₹{{ result.reducing_total_payable }}</p>
+    <table>
+      <thead><tr><th>#</th>{% if result.reducing_schedule.0.due_date %}<th>Due Date</th>{% endif %}<th>Principal</th><th>Interest</th><th>Amount</th></tr></thead>
+      <tbody>
+        {% for row in result.reducing_schedule %}
+          <tr>
+            <td>{{ row.number }}</td>
+            {% if row.due_date %}<td>{{ row.due_date }}</td>{% endif %}
+            <td>₹{{ row.principal }}</td>
+            <td>₹{{ row.interest }}</td>
+            <td>₹{{ row.amount }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="muted">Reducing Balance interest ({{ result.reducing_total_interest }}) is normally lower than Flat ({{ result.flat_total_interest }}) for the same terms, since it's charged only on the outstanding balance, not the original principal.</p>
+{% endif %}
+{% endblock %}

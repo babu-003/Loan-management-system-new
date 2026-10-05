@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ loan.loan_number }}</h1>
+    <p class="muted">
+      <a href="{% url 'customers:detail' loan.customer.pk %}">{{ loan.customer.full_name }} ({{ loan.customer.customer_id }})</a>
+      {% if loan.loan_group %} · Group: <a href="{% url 'loans:group_detail' loan.loan_group.pk %}">{{ loan.loan_group.group_id }}</a>{% endif %}
+      · <span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span>
+    </p>
+  </div>
+  <a href="{% url 'payments:add' %}?loan={{ loan.pk }}" class="btn">Record Payment</a>
+</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div><strong>Principal:</strong> ₹{{ loan.principal_amount }}</div>
+    <div><strong>Interest Rate:</strong> {{ loan.interest_rate }}% p.a. ({{ loan.interest_type.name }})</div>
+    <div><strong>Total Interest:</strong> ₹{{ loan.total_interest }}</div>
+    <div><strong>Total Payable:</strong> ₹{{ loan.total_payable }}</div>
+    <div><strong>Repayment:</strong> {{ loan.get_repayment_frequency_display }} · {{ loan.number_of_installments }} installments</div>
+    <div><strong>Outstanding:</strong> ₹{{ loan.total_outstanding }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Installment Schedule</h3>
+  <table>
+    <thead><tr><th>#</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for inst in installments %}
+        <tr>
+          <td>{{ inst.installment_number }}</td>
+          <td>{{ inst.due_date }}{% if inst.due_date != inst.original_due_date %} <span class="muted">(was {{ inst.original_due_date }})</span>{% endif %}</td>
+          <td>₹{{ inst.principal_component }}</td>
+          <td>₹{{ inst.interest_component }}</td>
+          <td>₹{{ inst.due_amount }}</td>
+          <td>₹{{ inst.paid_amount }}</td>
+          <td>₹{{ inst.balance_amount }}</td>
+          <td><span class="badge {% if inst.is_overdue %}overdue{% else %}{{ inst.status }}{% endif %}">{% if inst.is_overdue %}Overdue{% else %}{{ inst.get_status_display }}{% endif %}</span></td>
+          <td><a href="{% url 'loans:edit_installment_due_date' loan.pk inst.pk %}" class="btn small secondary">Edit Date</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Payment History</h3>
+  <table>
+    <thead><tr><th>Receipt No.</th><th>Date</th><th>Amount</th><th></th></tr></thead>
+    <tbody>
+      {% for payment in loan.payments.all %}
+        <tr>
+          <td>{{ payment.receipt_number }}{% if payment.edited_at %} <span class="badge pending">edited</span>{% endif %}</td>
+          <td>{{ payment.payment_date }}</td>
+          <td>₹{{ payment.amount_paid }}</td>
+          <td><a href="{% url 'payments:detail' payment.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="4" class="muted">No payments recorded yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3>Loan Documents</h3>
+    <a href="{% url 'documents:loan_document_add' loan.pk %}" class="btn small">+ Add Document</a>
+  </div>
+  <table>
+    <thead><tr><th>Type</th><th>Reference No.</th><th>File</th><th>Uploaded</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for document in loan.documents.all %}
+        <tr>
+          <td>{{ document.document_type.name }}</td>
+          <td>{{ document.document_number|default:"—" }}</td>
+          <td>{% if document.file %}<a href="{{ document.file.url }}" target="_blank">View</a>{% else %}<span class="muted">No file</span>{% endif %}</td>
+          <td>{{ document.uploaded_date }}</td>
+          <td>
+            <form method="post" action="{% url 'documents:loan_document_verify' loan.pk document.pk %}" style="display:inline">
+              {% csrf_token %}
+              <select name="verified_status" onchange="this.form.submit()">
+                <option value="pending" {% if document.verified_status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="verified" {% if document.verified_status == 'verified' %}selected{% endif %}>Verified</option>
+                <option value="rejected" {% if document.verified_status == 'rejected' %}selected{% endif %}>Rejected</option>
+              </select>
+            </form>
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="5" class="muted">No documents on file for this loan.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3>Notices</h3>
+    <a href="{% url 'documents:notice_add' loan.pk %}" class="btn small">+ Record Notice</a>
+  </div>
+  <table>
+    <thead><tr><th>Type</th><th>Date</th><th>Reason</th><th>Linked Document</th></tr></thead>
+    <tbody>
+      {% for notice in loan.notices.all %}
+        <tr>
+          <td>{{ notice.notice_type.name }}</td>
+          <td>{{ notice.notice_date }}</td>
+          <td>{{ notice.reason }}</td>
+          <td>{% if notice.document %}{{ notice.document.document_type.name }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+      {% empty %}<tr><td colspan="4" class="muted">No notices recorded for this loan.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

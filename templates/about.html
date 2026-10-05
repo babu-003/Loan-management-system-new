@@ -1,0 +1,49 @@
+{% extends "public_base.html" %}
+{% block title %}About Us — {{ company_name|default:"Loan Management System" }}{% endblock %}
+{% block content %}
+
+<section class="about-hero">
+  <span class="hero-eyebrow" style="color:var(--color-accent-dark);background:var(--color-accent-light);border-color:var(--color-accent);">Our story</span>
+  <h1>Lending built on trust, not fine print.</h1>
+  <p>We started as a small local lender tired of watching families get buried in confusing terms. Today we run the same way — clear numbers, honest timelines, real people on the phone.</p>
+</section>
+
+<section class="section">
+  <div class="section-head reveal">
+    <span class="kicker">What matters to us</span>
+    <h2>The values behind every loan</h2>
+  </div>
+  <div class="value-grid">
+    <div class="value-card reveal">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V7l7-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>Transparency</h3>
+      <p>Every rate, fee and repayment date is explained before you sign — never buried in a footnote.</p>
+    </div>
+    <div class="value-card reveal" style="transition-delay:.08s">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+      <h3>Speed</h3>
+      <p>Most applications get a decision within 24 hours — your plans shouldn't wait on paperwork.</p>
+    </div>
+    <div class="value-card reveal" style="transition-delay:.16s">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 20c.8-3.2 3-5 6-5s5.2 1.8 6 5M13 20c.6-2.6 2.4-4 5-4s4.4 1.4 5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <h3>Community</h3>
+      <p>We lend where we live — every branch is staffed by people from the neighborhood it serves.</p>
+    </div>
+  </div>
+</section>
+
+<div class="stats-strip reveal" style="margin:0 24px 70px;">
+  <div class="stat-cell"><div class="num">15+</div><div class="label">Years in business</div></div>
+  <div class="stat-cell"><div class="num">9</div><div class="label">Branch locations</div></div>
+  <div class="stat-cell"><div class="num">120+</div><div class="label">Team members</div></div>
+  <div class="stat-cell"><div class="num">12k+</div><div class="label">Families served</div></div>
+</div>
+
+<div class="cta-band reveal">
+  <div class="coin-shine-strip"></div>
+  <h2>Want to talk it through first?</h2>
+  <p>Our team is happy to walk you through options before you apply.</p>
+  <a href="{% url 'public:contact' %}" class="btn accent">Contact Us</a>
+</div>
+
+{% endblock %}

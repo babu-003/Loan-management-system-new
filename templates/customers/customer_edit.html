@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Customer — {{ object.customer_id }}</h1>
+<div class="card">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h3>Personal Details</h3>
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <h3 style="margin-top:24px;">Address</h3>
+    <div class="form-grid">
+      {% for field in address_form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:20px;">
+      <button class="btn">Save Changes</button>
+      <a href="{% url 'customers:detail' object.pk %}" class="btn secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

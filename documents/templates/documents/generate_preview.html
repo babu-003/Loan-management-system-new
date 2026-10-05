@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ title }} — {{ loan.loan_number }}</h1>
+<p class="muted">Review and edit the text below if needed, then download. The details table (always accurate, pulled live from this loan) will be printed above this text on the document.</p>
+
+<div class="card">
+  <h3>Details that will appear on the document</h3>
+  <table>
+    {% for label, value in details_rows %}
+      <tr><th style="width:40%;">{{ label }}</th><td>{{ value }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group full">
+      <label>Document Text (editable)</label>
+      {{ form.body_text }}
+      {{ form.body_text.errors }}
+    </div>
+    <button class="btn" style="margin-top:12px;">Download PDF</button>
+    <a href="{% url 'loans:detail' loan.pk %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

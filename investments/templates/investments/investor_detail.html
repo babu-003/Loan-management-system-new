@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ investor.full_name }}</h1>
+    <p class="muted">{{ investor.investor_id }} · {{ investor.mobile }} · <span class="badge {{ investor.status }}">{{ investor.get_status_display }}</span></p>
+  </div>
+  <a href="{% url 'investments:deposit_add' %}?investor={{ investor.pk }}" class="btn">+ Record Deposit</a>
+</div>
+
+<div class="card">
+  <div class="muted">Total Deposited</div>
+  <h2>Rs. {{ investor.total_deposited }}</h2>
+</div>
+
+<div class="card">
+  <h3>Deposit History</h3>
+  <table>
+    <thead><tr><th>Date</th><th>Amount</th><th>Pool Balance After</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+      {% for entry in entries %}
+        <tr>
+          <td>{{ entry.created_at }}</td>
+          <td>Rs. {{ entry.amount }}{% if entry.edited_at %} <span class="badge pending">edited</span>{% endif %}</td>
+          <td>Rs. {{ entry.balance_after }}</td>
+          <td class="muted">{{ entry.notes|default:"—" }}{% if entry.previous_amount %}<br><span class="muted">Previously Rs. {{ entry.previous_amount }}</span>{% endif %}</td>
+          <td>{% if entry.entry_type == "deposit" %}<a href="{% url 'investments:deposit_edit' entry.pk %}" class="btn small secondary">Edit</a>{% endif %}</td>
+        </tr>
+      {% empty %}<tr><td colspan="5" class="muted">No deposits recorded yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

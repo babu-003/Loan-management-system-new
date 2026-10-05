@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ customer.full_name }}</h1>
+    <p class="muted">{{ customer.customer_id }} · {{ customer.mobile }} · <span class="badge {{ customer.status }}">{{ customer.get_status_display }}</span></p>
+  </div>
+  <a href="{% url 'customers:edit' customer.pk %}" class="btn secondary">Edit Customer</a>
+</div>
+
+<div class="tabs">
+  <a class="tab {% if active_tab == 'overview' %}active{% endif %}" href="?tab=overview">Overview</a>
+  <a class="tab {% if active_tab == 'personal' %}active{% endif %}" href="?tab=personal">Personal Details</a>
+  <a class="tab {% if active_tab == 'address' %}active{% endif %}" href="?tab=address">Address</a>
+  <a class="tab {% if active_tab == 'reference' %}active{% endif %}" href="?tab=reference">Reference</a>
+  <a class="tab {% if active_tab == 'bank' %}active{% endif %}" href="?tab=bank">Bank Details</a>
+  <a class="tab {% if active_tab == 'documents' %}active{% endif %}" href="?tab=documents">Documents</a>
+  <a class="tab {% if active_tab == 'loans' %}active{% endif %}" href="?tab=loans">Loans</a>
+</div>
+
+{% if active_tab == 'overview' %}
+  <div class="card">
+    <h3>Summary</h3>
+    <p><strong>Active Loans:</strong> {{ active_loan_count }} &nbsp; <strong>Total Outstanding:</strong> ₹{{ total_outstanding_amount }}</p>
+    <p><strong>Occupation:</strong> {{ customer.occupation }} &nbsp; <strong>Monthly Income:</strong> ₹{{ customer.monthly_income }}</p>
+    <p><strong>KYC Verified:</strong> {% if customer.has_verified_kyc %}<span class="badge verified">Yes</span>{% else %}<span class="badge pending">Not yet</span>{% endif %}</p>
+  </div>
+
+{% elif active_tab == 'personal' %}
+  <div class="card">
+    <table>
+      <tr><th>Full Name</th><td>{{ customer.full_name }}</td></tr>
+      <tr><th>Date of Birth</th><td>{{ customer.date_of_birth }}</td></tr>
+      <tr><th>Gender</th><td>{{ customer.get_gender_display }}</td></tr>
+      <tr><th>Mobile</th><td>{{ customer.mobile }}</td></tr>
+      <tr><th>Alternate Mobile</th><td>{{ customer.alternate_mobile|default:"—" }}</td></tr>
+      <tr><th>Email</th><td>{{ customer.email|default:"—" }}</td></tr>
+      <tr><th>Marital Status</th><td>{{ customer.get_marital_status_display }}</td></tr>
+      <tr><th>Occupation</th><td>{{ customer.occupation }}</td></tr>
+      <tr><th>Monthly Income</th><td>₹{{ customer.monthly_income }}</td></tr>
+      <tr><th>Father / Husband Name</th><td>{{ customer.father_husband_name }}</td></tr>
+      {% if customer.photo %}<tr><th>Photo</th><td><img src="{{ customer.photo.url }}" style="max-width:120px;border-radius:8px;"></td></tr>{% endif %}
+    </table>
+  </div>
+
+{% elif active_tab == 'address' %}
+  <div class="card">
+    <h3>Permanent Address</h3>
+    <p>{{ customer.permanent_door_no }}, {{ customer.permanent_street }}, {{ customer.permanent_area }}<br>
+       {{ customer.permanent_village_town }}, {{ customer.permanent_city }}, {{ customer.permanent_district }}<br>
+       {{ customer.permanent_state }} — {{ customer.permanent_pincode }}</p>
+    <h3>Current Address {% if customer.same_as_permanent_address %}<span class="muted">(same as permanent)</span>{% endif %}</h3>
+    <p>{{ customer.current_door_no }}, {{ customer.current_street }}, {{ customer.current_area }}<br>
+       {{ customer.current_village_town }}, {{ customer.current_city }}, {{ customer.current_district }}<br>
+       {{ customer.current_state }} — {{ customer.current_pincode }}</p>
+  </div>
+
+{% elif active_tab == 'reference' %}
+  <div class="card">
+    <table>
+      <thead><tr><th>Name</th><th>Mobile</th><th>Relationship</th><th>Address</th></tr></thead>
+      <tbody>
+        {% for reference in references %}
+          <tr>
+            <td>{{ reference.reference_name }}</td>
+            <td>{{ reference.reference_mobile }}</td>
+            <td>{{ reference.relationship }}</td>
+            <td>{{ reference.reference_address }}</td>
+          </tr>
+        {% empty %}<tr><td colspan="4" class="muted">No references on file.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+{% elif active_tab == 'bank' %}
+  <div class="card">
+    {% if bank_detail %}
+      <table>
+        <tr><th>Account Holder</th><td>{{ bank_detail.account_holder_name }}</td></tr>
+        <tr><th>Bank</th><td>{{ bank_detail.bank_name }}</td></tr>
+        <tr><th>Branch</th><td>{{ bank_detail.branch }}</td></tr>
+        <tr><th>Account Number</th><td>{{ bank_detail.masked_account_number }}</td></tr>
+        <tr><th>IFSC</th><td>{{ bank_detail.ifsc }}</td></tr>
+        <tr><th>Account Type</th><td>{{ bank_detail.get_account_type_display }}</td></tr>
+      </table>
+    {% else %}
+      <p class="muted">No bank details on file.</p>
+    {% endif %}
+  </div>
+
+{% elif active_tab == 'documents' %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>KYC Documents</h3>
+      <div>
+        <a href="{% url 'documents:list' %}" class="btn small secondary">Manage All Documents</a>
+        <a href="{% url 'customers:add_document' customer.pk %}" class="btn small">+ Add Document</a>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Type</th><th>ID / Number</th><th>File</th><th>Uploaded</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for document in documents %}
+          <tr>
+            <td>{{ document.document_type.name }}</td>
+            <td>{{ document.document_number|default:"—" }}</td>
+            <td>{% if document.file %}<a href="{{ document.file.url }}" target="_blank">View</a>{% else %}<span class="muted">No file</span>{% endif %}</td>
+            <td>{{ document.uploaded_date }}</td>
+            <td><span class="badge {{ document.verified_status }}">{{ document.get_verified_status_display }}</span></td>
+            <td>
+              <form method="post" action="{% url 'customers:verify_document' customer.pk document.pk %}" style="display:inline">
+                {% csrf_token %}
+                <select name="verified_status" onchange="this.form.submit()">
+                  <option value="pending" {% if document.verified_status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="verified" {% if document.verified_status == 'verified' %}selected{% endif %}>Verified</option>
+                  <option value="rejected" {% if document.verified_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+              </form>
+            </td>
+          </tr>
+        {% empty %}<tr><td colspan="6" class="muted">No documents on file.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% elif active_tab == 'loans' %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>Loans</h3>
+      <a href="{% url 'loans:add' %}?customer={{ customer.pk }}" class="btn small">+ New Loan</a>
+    </div>
+    <table>
+      <thead><tr><th>Loan No.</th><th>Principal</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for loan in loans %}
+          <tr>
+            <td>{{ loan.loan_number }}</td>
+            <td>₹{{ loan.principal_amount }}</td>
+            <td>₹{{ loan.total_outstanding }}</td>
+            <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+            <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+          </tr>
+        {% empty %}<tr><td colspan="5" class="muted">No loans for this customer yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

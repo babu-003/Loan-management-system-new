@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Login — {{ company_name|default:"Loan Management System" }}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<div class="login-page">
+
+  <div class="login-hero">
+    <div class="login-hero-content">
+    <div class="login-hero-brand">
+      <span class="brand-mark">{{ company_name|default:"L"|first|upper }}</span>
+      <span class="brand-name">{{ company_name|default:"Loan Management System" }}</span>
+    </div>
+
+    <div>
+      <div class="coin-scene">
+        <svg viewBox="0 0 420 260" width="100%" height="230" style="max-width:400px;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="coinGold" cx="35%" cy="30%" r="75%">
+              <stop offset="0%" stop-color="#f6e3a8"/>
+              <stop offset="55%" stop-color="#c89b3c"/>
+              <stop offset="100%" stop-color="#8f6a1c"/>
+            </radialGradient>
+            <linearGradient id="coinEdge" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#a17a24"/>
+              <stop offset="100%" stop-color="#6b4e14"/>
+            </linearGradient>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#c89b3c" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#c89b3c" stop-opacity="0"/>
+            </radialGradient>
+            <clipPath id="mainCoinClip">
+              <circle cx="210" cy="130" r="52"/>
+            </clipPath>
+          </defs>
+
+          <!-- soft glow behind the whole cluster, gives the scene depth -->
+          <circle cx="210" cy="130" r="130" fill="url(#glow)" />
+
+          <!-- orbit rings around the central emblem, slow continuous spin -->
+          <g class="coin-spin-slow" style="transform-origin:210px 130px;">
+            <circle cx="210" cy="130" r="98" fill="none" stroke="#c89b3c" stroke-width="1.5" stroke-dasharray="2 8" opacity="0.55"/>
+          </g>
+          <circle cx="210" cy="130" r="80" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.15"/>
+
+          <!-- a stacked pile of coins, side-on, for variety beyond flat circles.
+               NOTE: the static position and the CSS-animated float must be on
+               SEPARATE <g> elements — applying a CSS transform (for the
+               animation) to the same <g> that also carries an SVG transform
+               attribute makes browsers miscompute transform-origin, causing
+               the whole group to jump to the wrong place entirely. -->
+          <g transform="translate(122,178)">
+            <g class="coin-float-3">
+              <ellipse cx="0" cy="10" rx="26" ry="9" fill="url(#coinEdge)"/>
+              <ellipse cx="0" cy="4" rx="26" ry="9" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1"/>
+              <ellipse cx="0" cy="-3" rx="26" ry="9" fill="url(#coinEdge)"/>
+              <ellipse cx="0" cy="-9" rx="26" ry="9" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1"/>
+            </g>
+          </g>
+
+          <!-- central rupee emblem coin, with an animated shine sweep -->
+          <circle cx="210" cy="130" r="52" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1.5"/>
+          <circle cx="210" cy="130" r="42" fill="none" stroke="#7c5a12" stroke-width="1" opacity="0.45"/>
+          <text x="210" y="147" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="#5c4210" text-anchor="middle">₹</text>
+          <g clip-path="url(#mainCoinClip)">
+            <rect class="coin-shine" x="150" y="60" width="18" height="150" fill="#ffffff" opacity="0.35" transform="rotate(28 210 130)"/>
+          </g>
+
+          <!-- smaller floating coins scattered around -->
+          <g class="coin-float-1">
+            <circle cx="72" cy="66" r="19" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1.2"/>
+            <text x="72" y="72" font-family="Georgia, serif" font-size="18" font-weight="700" fill="#5c4210" text-anchor="middle">₹</text>
+          </g>
+          <g class="coin-float-2">
+            <circle cx="352" cy="58" r="15" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1"/>
+            <text x="352" y="63" font-family="Georgia, serif" font-size="14" font-weight="700" fill="#5c4210" text-anchor="middle">₹</text>
+          </g>
+          <g class="coin-float-3">
+            <circle cx="60" cy="200" r="13" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1"/>
+            <text x="60" y="205" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#5c4210" text-anchor="middle">₹</text>
+          </g>
+          <g class="coin-float-4">
+            <circle cx="366" cy="188" r="17" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1.2"/>
+            <text x="366" y="193" font-family="Georgia, serif" font-size="16" font-weight="700" fill="#5c4210" text-anchor="middle">₹</text>
+          </g>
+
+          <!-- growth trajectory, ending in a coin -->
+          <polyline points="46,222 108,196 158,208 214,168 268,150 322,128"
+                    fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+          <g class="coin-float-2">
+            <circle cx="322" cy="128" r="9" fill="url(#coinGold)" stroke="#7c5a12" stroke-width="1"/>
+          </g>
+
+          <!-- sparkle accents -->
+          <g class="sparkle sparkle-1"><path d="M0,-6 L1.5,-1.5 L6,0 L1.5,1.5 L0,6 L-1.5,1.5 L-6,0 L-1.5,-1.5 Z" fill="#fff" transform="translate(268,90)"/></g>
+          <g class="sparkle sparkle-2"><path d="M0,-5 L1.2,-1.2 L5,0 L1.2,1.2 L0,5 L-1.2,1.2 L-5,0 L-1.2,-1.2 Z" fill="#fff" transform="translate(140,60)"/></g>
+          <g class="sparkle sparkle-3"><path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" fill="#f6e3a8" transform="translate(300,200)"/></g>
+        </svg>
+
+        <!-- faint passbook / loan document watermark, grounding the scene
+             in "loan" rather than money in the abstract -->
+        <svg class="doc-watermark" viewBox="0 0 120 150" width="140" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="112" height="142" rx="6" fill="none" stroke="#ffffff" stroke-width="3"/>
+          <line x1="22" y1="40" x2="98" y2="40" stroke="#ffffff" stroke-width="3"/>
+          <line x1="22" y1="62" x2="98" y2="62" stroke="#ffffff" stroke-width="3"/>
+          <line x1="22" y1="84" x2="72" y2="84" stroke="#ffffff" stroke-width="3"/>
+          <path d="M70,112 L110,100" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+          <path d="M104,96 L112,100 L106,108 Z" fill="#ffffff"/>
+        </svg>
+      </div>
+
+      <h1>Manage loans, payments and customers from one place.</h1>
+      <p>Customer records, loan schedules, repayments, and documents — all kept locally, on this computer.</p>
+    </div>
+    </div>
+
+    <div class="login-hero-footer">● Offline Mode — your data stays on this device</div>
+  </div>
+
+  <div class="login-form-side">
+    <div class="form-side-glow"></div>
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <span class="muted">Sign in to continue.</span>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group full">
+          <label>Username</label>
+          {{ form.username }}
+        </div>
+        <div class="form-group full" style="margin-top:14px;">
+          <label>Password</label>
+        
+          <div style="position:relative;">
+            {{ form.password }}
+          
+            <span onclick="togglePassword()" style="position:absolute; right:12px; top:50%;
+                                   transform:translateY(-50%); cursor:pointer;">
+          
+              <svg id="coin" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#F4C542" />
+                <circle cx="12" cy="12" r="8" stroke="#D69E2E" stroke-width="1.5" />
+                <text x="12" y="15" text-anchor="middle" font-size="9" font-weight="bold" fill="#7A5200">₹</text>
+              </svg>
+          
+            </span>  </div>
+        </div>
+        
+        {% if form.errors %}<p style="color:#a6402f;font-size:13px;margin-top:10px;">Invalid username or password.</p>{% endif %}
+        <button class="btn">Login</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+<script>
+  function togglePassword() {
+    const pwd = document.getElementById("id_password");
+    const coin = document.getElementById("coin");
+
+    if (pwd.type === "password") {
+      pwd.type = "text";
+      coin.style.transform = "rotateY(180deg)";
+      coin.style.opacity = "0.7";
+    } else {
+      pwd.type = "password";
+      coin.style.transform = "rotateY(0deg)";
+      coin.style.opacity = "1";
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Document Templates</h1>
+<p class="muted">The wording used when generating a Loan Agreement, Overdue Notice, or Closing Document. Facts like customer name and loan amount are filled in automatically from placeholders — edit the surrounding text as needed.</p>
+<div class="card">
+  <table>
+    <thead><tr><th>Document Type</th><th></th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td><a href="{% url 'documents:template_edit' row.category %}" class="btn small secondary">Edit Template</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

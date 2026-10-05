@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Template — {{ template.get_category_display }}</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group full">
+      {{ form.body }}
+      {{ form.body.errors }}
+    </div>
+    <button class="btn" style="margin-top:12px;">Save Template</button>
+    <a href="{% url 'documents:template_list' %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+<div class="card">
+  <h3>Available Placeholders</h3>
+  <p class="muted">Type these exactly, with double curly braces, anywhere in the text above — they'll be replaced automatically when a document is generated.</p>
+  <p>
+    {% for p in placeholders %}<code style="background:#f4f6f8;padding:2px 6px;border-radius:4px;margin:2px;display:inline-block;">{% templatetag openvariable %} {{ p }} {% templatetag closevariable %}</code>{% endfor %}
+  </p>
+</div>
+{% endblock %}

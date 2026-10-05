@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ group.group_id }} — {{ group.group_name }}</h1>
+    <p class="muted">{{ group.description }}</p>
+  </div>
+  <a href="{% url 'loans:add' %}?group={{ group.pk }}" class="btn">+ Add Member Loan</a>
+</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div><strong>Members:</strong> {{ group.member_count }}</div>
+    <div><strong>Total Principal:</strong> ₹{{ group.total_principal }}</div>
+    <div><strong>Total Payable:</strong> ₹{{ group.total_payable }}</div>
+    <div><strong>Total Paid:</strong> ₹{{ group.total_paid }}</div>
+    <div><strong>Total Outstanding:</strong> ₹{{ group.total_outstanding }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Member Loans</h3>
+  <table>
+    <thead><tr><th>Loan No.</th><th>Customer</th><th>Principal</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in loans %}
+        <tr>
+          <td>{{ loan.loan_number }}</td>
+          <td>{{ loan.customer.full_name }}</td>
+          <td>₹{{ loan.principal_amount }}</td>
+          <td>₹{{ loan.total_outstanding }}</td>
+          <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+          <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="muted">No member loans yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

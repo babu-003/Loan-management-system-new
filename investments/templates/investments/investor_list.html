@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Investors</h1>
+  <div>
+    <a href="{% url 'investments:ledger_list' %}" class="btn secondary">Invest Log</a>
+    <a href="{% url 'investments:deposit_add' %}" class="btn secondary">Record Deposit</a>
+    <a href="{% url 'investments:investor_add' %}" class="btn">+ Add Investor</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="muted">Current Available Pool Balance</div>
+  <h2 style="{% if pool_balance < 0 %}color:#b91c1c;{% endif %}">Rs. {{ pool_balance }}</h2>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Investor ID</th><th>Name</th><th>Mobile</th><th>Total Deposited</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for investor in investors %}
+        <tr>
+          <td>{{ investor.investor_id }}</td>
+          <td>{{ investor.full_name }}</td>
+          <td>{{ investor.mobile }}</td>
+          <td>Rs. {{ investor.total_deposited }}</td>
+          <td><span class="badge {{ investor.status }}">{{ investor.get_status_display }}</span></td>
+          <td><a href="{% url 'investments:investor_detail' investor.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="muted">No investors yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

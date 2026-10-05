@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ loan.loan_number }}</h1>
+    <p class="muted">
+      <a href="{% url 'customers:detail' loan.customer.pk %}">{{ loan.customer.full_name }} ({{ loan.customer.customer_id }})</a>
+      {% if loan.loan_group %} · Group: <a href="{% url 'loans:group_detail' loan.loan_group.pk %}">{{ loan.loan_group.group_id }}</a>{% endif %}
+      · <span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span>
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div><strong>Principal:</strong> ₹{{ loan.principal_amount }}</div>
+    <div><strong>Interest Rate:</strong> {{ loan.interest_rate }}% p.a. ({{ loan.interest_type.name }})</div>
+    <div><strong>Total Interest:</strong> ₹{{ loan.total_interest }}</div>
+    <div><strong>Total Payable:</strong> ₹{{ loan.total_payable }}</div>
+    <div><strong>Repayment:</strong> {{ loan.get_repayment_frequency_display }} · {{ loan.number_of_installments }} installments</div>
+    <div><strong>Outstanding:</strong> ₹{{ loan.total_outstanding }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Installment Schedule</h3>
+  <table>
+    <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for inst in installments %}
+        <tr>
+          <td>{{ inst.installment_number }}</td>
+          <td>{{ inst.due_date }}{% if inst.due_date != inst.original_due_date %} <span class="muted">(was {{ inst.original_due_date }})</span>{% endif %}</td>
+          <td>₹{{ inst.due_amount }}</td>
+          <td>₹{{ inst.paid_amount }}</td>
+          <td>₹{{ inst.balance_amount }}</td>
+          <td><span class="badge {% if inst.is_overdue %}overdue{% else %}{{ inst.status }}{% endif %}">{% if inst.is_overdue %}Overdue{% else %}{{ inst.get_status_display }}{% endif %}</span></td>
+          <td><a href="{% url 'loans:edit_installment_due_date' loan.pk inst.pk %}" class="btn small secondary">Edit Date</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

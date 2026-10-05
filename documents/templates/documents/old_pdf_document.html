@@ -1,0 +1,46 @@
+<html>
+<head>
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; color: #1f2937; }
+  .letterhead { text-align: center; border-bottom: 2px solid #1d4ed8; padding-bottom: 10px; margin-bottom: 18px; }
+  .letterhead h1 { font-size: 16pt; color: #1e3a8a; margin: 0 0 4px 0; }
+  .letterhead .contact { font-size: 9pt; color: #6b7280; }
+  h2.doc-title { text-align: center; font-size: 13pt; text-decoration: underline; margin: 14px 0 18px 0; }
+  table.details { width: 100%; margin-bottom: 20px; }
+  table.details td { border: 1px solid #d1d5db; padding: 5px 8px; font-size: 10pt; }
+  table.details td.label { background: #f4f6f8; width: 40%; font-weight: bold; }
+  .body-text { font-size: 10.5pt; line-height: 1.3; white-space: pre-wrap; text-align: justify; }
+  .signature-block { margin-top: 50px; }
+  .signature-line { display: inline-block; width: 45%; }
+  .signature-line .line { border-top: 1px solid #1f2937; margin-top: 40px; padding-top: 4px; font-size: 9pt; }
+</style>
+</head>
+<body>
+  <div class="letterhead">
+    <h1>{{ company_name|default:"Finance Company" }}</h1>
+    <div class="contact">
+      {{ company_address }}{% if company_phone %} &nbsp;|&nbsp; Ph: {{ company_phone }}{% endif %}{% if company_email %} &nbsp;|&nbsp; {{ company_email }}{% endif %}
+    </div>
+  </div>
+
+  <h2 class="doc-title">{{ title }}</h2>
+
+  <table class="details">
+    {% for label, value in details_rows %}
+      <tr><td class="label">{{ label }}</td><td>{{ value }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <div class="body-text">{{ body_text }}</div>
+
+  <div class="signature-block">
+    <div class="signature-line">
+      <div class="line">Authorized Signatory<br>{{ company_name }}</div>
+    </div>
+    <div class="signature-line" style="float:right;">
+      <div class="line">Borrower's Signature</div>
+    </div>
+  </div>
+</body>
+</html>

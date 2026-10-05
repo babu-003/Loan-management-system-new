@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Record Payment</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group {% if field.name == 'remarks' %}full{% endif %}">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+    <p class="muted" style="margin-top:12px;">Applied to the oldest unpaid installment first. If this amount is more than what's currently owed, the extra automatically covers the next installment(s).</p>
+    <button class="btn" style="margin-top:8px;">Record Payment</button>
+  </form>
+</div>
+{% endblock %}

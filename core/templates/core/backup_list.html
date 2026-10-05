@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Backup &amp; Restore</h1>
+  <div>
+    <a href="{% url 'settings:backup_restore_upload' %}" class="btn secondary">Restore from Uploaded File</a>
+    <form method="post" action="{% url 'settings:backup_create' %}" style="display:inline">
+      {% csrf_token %}
+      <button type="submit" class="btn">Create Backup Now</button>
+    </form>
+  </div>
+</div>
+
+<p class="muted">A backup contains the full database (customers, loans, payments, documents metadata) plus every uploaded photo and document file. Download backups regularly and keep a copy somewhere off this computer (a USB drive, etc.) — this system keeps everything local only.</p>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Filename</th><th>Created</th><th>Size</th><th>Notes</th><th>Restored At</th><th></th></tr></thead>
+    <tbody>
+      {% for record in records %}
+        <tr>
+          <td>{{ record.filename }}{% if not record.file_exists %} <span class="badge rejected">missing on disk</span>{% endif %}</td>
+          <td>{{ record.created_at }}</td>
+          <td>{{ record.size_display }}</td>
+          <td class="muted">{{ record.notes|default:"—" }}</td>
+          <td>{{ record.restored_at|default:"—" }}</td>
+          <td>
+            {% if record.file_exists %}
+              <a href="{% url 'settings:backup_download' record.pk %}" class="btn small secondary">Download</a>
+              <a href="{% url 'settings:backup_restore' record.pk %}" class="btn small secondary">Restore</a>
+            {% endif %}
+            <form method="post" action="{% url 'settings:backup_delete' record.pk %}" style="display:inline" onsubmit="return confirm('Delete this backup permanently?');">
+              {% csrf_token %}
+              <button type="submit" class="btn small secondary">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="muted">No backups yet — click "Create Backup Now" above.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

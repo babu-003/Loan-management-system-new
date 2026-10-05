@@ -1,0 +1,95 @@
+{% extends "public_base.html" %}
+{% block title %}{{ company_name|default:"Loan Management System" }} — Loans, done right{% endblock %}
+{% load static %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-blob b1"></div>
+  <div class="hero-blob b2"></div>
+
+  <span class="hero-eyebrow">Trusted local lending</span>
+  <h1>Loans that fund your plans, <span class="accent-word">not your paperwork.</span></h1>
+  <p class="lead">Personal, gold, business and group loans with clear terms, fast approvals, and a team that explains every rupee — no fine print surprises.</p>
+
+  <div class="hero-ctas">
+    <!--<a href="{% url 'public:contact' %}" class="btn accent">Apply for a Loan</a>-->
+    <a href="{% url 'accounts:login' %}" class="btn-login">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Login
+    </a>
+  </div>
+
+  <!-- Animated hero illustration: house, growth line and floating coins -->
+  <svg viewBox="0 0 320 170" width="340" style="position:relative;z-index:1;" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M40 130 L95 90 L150 130 V170 H40 Z" fill="#0e3a52" stroke="#c1912f" stroke-width="2"/>
+    <path d="M30 132 L95 84 L160 132" stroke="#c1912f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <rect x="82" y="142" width="26" height="28" fill="#c1912f"/>
+    <path d="M190 150 L225 118 L250 136 L295 78" stroke="#e3b45a" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M270 78 H295 V100" stroke="#e3b45a" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="hero-coins">
+    <svg class="c1" width="46" height="46" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#c1912f" stroke="#fff8e8" stroke-width="1.4"/><text x="12" y="16.5" font-size="11" text-anchor="middle" fill="#fff8e8" font-family="Georgia,serif">₹</text></svg>
+    <svg class="c2" width="34" height="34" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e3b45a" stroke="#fff8e8" stroke-width="1.4"/><text x="12" y="16.5" font-size="11" text-anchor="middle" fill="#0e3a52" font-family="Georgia,serif">$</text></svg>
+    <svg class="c3" width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#97701f" stroke="#fff8e8" stroke-width="1.4"/><text x="12" y="16.5" font-size="11" text-anchor="middle" fill="#fff8e8" font-family="Georgia,serif">₹</text></svg>
+  </div>
+</section>
+
+<div class="stats-strip reveal">
+  <div class="stat-cell"><div class="num">12k+</div><div class="label">Loans disbursed</div></div>
+  <div class="stat-cell"><div class="num">₹80Cr+</div><div class="label">Total funded</div></div>
+  <div class="stat-cell"><div class="num">24 hrs</div><div class="label">Avg. approval time</div></div>
+  <div class="stat-cell"><div class="num">4.8 / 5</div><div class="label">Customer rating</div></div>
+</div>
+
+<section class="section">
+  <div class="section-head reveal">
+    <span class="kicker">What we offer</span>
+    <h2>A loan for every stage of life</h2>
+    <p>Straightforward products, no hidden charges, and terms explained in plain language before you sign anything.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 11h18" stroke="currentColor" stroke-width="1.7"/><circle cx="7" cy="15" r="1" fill="currentColor"/></svg></div>
+      <h3>Personal Loans</h3>
+      <p>Quick funds for weddings, travel, medical needs or anything life throws at you.</p>
+    </div>
+    <div class="feature-card reveal" style="transition-delay:.08s">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v8M9 10.5h4.5a1.5 1.5 0 0 1 0 3H10a1.5 1.5 0 0 0 0 3h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <h3>vechical Loans</h3>
+      <p>Unlock the value of your  with same-day disbursal and secure storage.</p>
+    </div>
+    <div class="feature-card reveal" style="transition-delay:.16s">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V9l7-5 7 5v12" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 21v-6h4v6" stroke="currentColor" stroke-width="1.7"/></svg></div>
+      <h3>Business Loans</h3>
+      <p>Working capital and expansion funding sized to your shop or small business.</p>
+    </div>
+    <div class="feature-card reveal" style="transition-delay:.24s">
+      <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 20c.8-3.2 3-5 6-5s5.2 1.8 6 5M13 20c.6-2.6 2.4-4 5-4s4.4 1.4 5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <h3>Group Loans</h3>
+      <p>Joint-liability lending for self-help groups, with shared accountability.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--color-bg-alt);border-radius:var(--radius);">
+  <div class="section-head reveal">
+    <span class="kicker">How it works</span>
+    <h2>From application to disbursal in four steps</h2>
+  </div>
+  <div class="steps-public">
+    <div class="step-public reveal"><div class="step-num">1</div><h4>Apply</h4><p>Fill a short form online or visit a branch.</p></div>
+    <div class="step-public reveal" style="transition-delay:.08s"><div class="step-num">2</div><h4>Verify</h4><p>We check your documents and KYC.</p></div>
+    <div class="step-public reveal" style="transition-delay:.16s"><div class="step-num">3</div><h4>Approve</h4><p>Get a clear offer — no vague terms.</p></div>
+    <div class="step-public reveal" style="transition-delay:.24s"><div class="step-num">4</div><h4>Disburse</h4><p>Funds land in your account, fast.</p></div>
+  </div>
+</section>
+
+<div class="cta-band reveal">
+  <div class="coin-shine-strip"></div>
+  <h2>Ready when you are.</h2>
+  <p>Start an application in under five minutes — no obligation.</p>
+  <a href="{% url 'public:contact' %}" class="btn accent">Get Started</a>
+  
+</div>
+
+{% endblock %}

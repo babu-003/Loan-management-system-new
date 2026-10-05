@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Loan Management System{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <a href="{% url 'customers:list' %}">{{ company_name|default:"Loan Management System" }}</a>
+      <a href="{% url 'reports:dashboard' %}" style="margin-left:18px;opacity:.85;">Dashboard</a>
+      <a href="{% url 'customers:list' %}" style="margin-left:18px;opacity:.85;">Customers</a>
+      <a href="{% url 'documents:list' %}" style="margin-left:18px;opacity:.85;">Documents</a>
+      <a href="{% url 'loans:list' %}" style="margin-left:18px;opacity:.85;">Loans</a>
+      <a href="{% url 'payments:list' %}" style="margin-left:18px;opacity:.85;">Payments</a>
+      <a href="{% url 'settings:edit' %}" style="margin-left:18px;opacity:.85;">Settings</a>
+      <a href="{% url 'settings:audit_log' %}" style="margin-left:18px;opacity:.85;">Audit Log</a>
+    </div>
+    <div>
+      <span style="margin-right:14px; opacity:.8;">● Offline Mode</span>
+      {% if user.is_authenticated %}
+        <a href="{% url 'accounts:profile' %}" style="color:#fff;opacity:.85;margin-right:14px;">{{ user.full_name|default:user.username }}</a>
+        <form method="post" action="{% url 'accounts:logout' %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn secondary" style="color:#fff;border-color:#fff;">Logout</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="container">
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

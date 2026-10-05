@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>My Profile</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button class="btn" style="margin-top:14px;">Save Changes</button>
+  </form>
+</div>
+<div class="card">
+  <a href="{% url 'accounts:password_change' %}" class="btn secondary">Change Password</a>
+</div>
+{% endblock %}

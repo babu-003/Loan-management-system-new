@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Restore from Uploaded File</h1>
+<div class="card" style="max-width:520px;">
+  <p class="muted">Use this if you're setting up on a new computer, or restoring a backup you saved elsewhere (USB drive, etc.).</p>
+  <p style="color:#b91c1c;"><strong>This will replace all current data</strong> with whatever is in the uploaded file.</p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group full">
+      <label>Backup File (.zip)</label>
+      <input type="file" name="backup_file" accept=".zip" required>
+    </div>
+    <button type="submit" class="btn" style="margin-top:12px;background:#b91c1c;border-color:#b91c1c;">Upload and Restore</button>
+    <a href="{% url 'settings:backup_list' %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

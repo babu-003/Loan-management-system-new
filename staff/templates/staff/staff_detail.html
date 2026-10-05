@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ staff.full_name }} — Staff{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;">
+  <div>
+    <p class="muted" style="margin-bottom:4px;">{{ staff.employee_id }}</p>
+    <h1 style="margin-top:0;">{{ staff.full_name }}</h1>
+    <p class="muted">{{ staff.mobile }}{% if staff.email %} · {{ staff.email }}{% endif %} · <span class="badge {{ staff.status }}">{{ staff.get_status_display }}</span></p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="{% url 'staff:edit' staff.pk %}" class="btn secondary">Edit Staff</a>
+    <a href="{% url 'staff:list' %}" class="btn secondary">Back</a>
+  </div>
+</div>
+
+<div class="cards" style="margin-top:18px; display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+  <div class="card"><div class="muted">Total Assigned</div><h2>{{ staff.total_assigned_loans }}</h2></div>
+  <div class="card"><div class="muted">Active Collection</div><h2>{{ staff.active_loan_count }}</h2></div>
+  <div class="card"><div class="muted">Completed</div><h2>{{ staff.completed_loan_count }}</h2></div>
+  <div class="card"><div class="muted">Closed</div><h2>{{ staff.closed_loan_count }}</h2></div>
+  <div class="card"><div class="muted">Collected</div><h2>₹{{ staff.total_collected }}</h2></div>
+  <div class="card"><div class="muted">Outstanding</div><h2>₹{{ staff.total_outstanding }}</h2></div>
+</div>
+
+<div class="card">
+  <h3>Staff Details</h3>
+  <div class="form-grid">
+    <div><strong>Employee ID:</strong> {{ staff.employee_id }}</div>
+    <div><strong>Joining Date:</strong> {{ staff.joining_date|default:"—" }}</div>
+    <div class="full"><strong>Address:</strong> {{ staff.address|default:"—" }}</div>
+    <div class="full"><strong>Notes:</strong> {{ staff.notes|default:"—" }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <div><h3 style="margin-bottom:3px;">Assigned Loan Work</h3><p class="muted">Every loan assigned to {{ staff.full_name }}.</p></div>
+    <form method="get" style="display:flex;gap:8px;align-items:center;">
+      <select name="status">
+        <option value="">All loan statuses</option>
+        {% for value,label in loan_status_choices %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn small" type="submit">Filter</button>
+    </form>
+  </div>
+  <table>
+    <thead><tr><th>Loan</th><th>Customer</th><th>Loan Type</th><th>Principal</th><th>Collected</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in loans %}
+      <tr>
+        <td><a href="{% url 'loans:detail' loan.pk %}"><strong>{{ loan.loan_number }}</strong></a></td>
+        <td>{{ loan.customer.full_name }}<br><span class="muted">{{ loan.customer.customer_id }}</span></td>
+        <td>{{ loan.loan_type.name }}</td>
+        <td>₹{{ loan.principal_amount }}</td>
+        <td>₹{{ loan.total_paid }}</td>
+        <td>₹{{ loan.total_outstanding }}</td>
+        <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+        <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View Loan</a></td>
+      </tr>
+      {% empty %}<tr><td colspan="8" class="muted">No loans are assigned to this staff member.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

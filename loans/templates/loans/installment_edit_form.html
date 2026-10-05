@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Due Date — Installment {{ installment.installment_number }}</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Due Date</label>
+      {{ form.due_date }}
+      {{ form.due_date.errors }}
+    </div>
+    <p class="muted">Original scheduled date: {{ installment.original_due_date }}</p>
+    <button class="btn" style="margin-top:10px;">Save</button>
+    <a href="{% url 'loans:detail' installment.loan.pk %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

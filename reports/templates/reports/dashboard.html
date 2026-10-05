@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dash-welcome">
+  <h1>Welcome back, {{ user.full_name|default:user.username }}</h1>
+  <div class="date">{% now "l, j F Y" %}</div>
+</div>
+
+<div class="section-heading"><h3>Portfolio</h3><div class="rule"></div></div>
+<div class="stat-row animated">
+  <div class="stat-card">
+    <div class="stat-label">Active Customers</div>
+    <div class="stat-value">{{ total_customers }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Active Loans</div>
+    <div class="stat-value">{{ total_loans_active }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Completed Loans</div>
+    <div class="stat-value">{{ total_loans_completed }}</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="stat-label">Principal Disbursed</div>
+    <div class="stat-value">₹{{ total_principal_disbursed }}</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="stat-label">Total Outstanding</div>
+    <div class="stat-value">₹{{ total_outstanding }}</div>
+  </div>
+</div>
+
+<div class="section-heading"><h3>Collections</h3><div class="rule"></div></div>
+<div class="stat-row animated" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card success">
+    <div class="stat-label">Collected This Month</div>
+    <div class="stat-value">₹{{ total_collected_this_month }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">Collected All Time</div>
+    <div class="stat-value">₹{{ total_collected_all_time }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Full Collection Report</div>
+    <div class="stat-sub">Search and export payments by date range.</div>
+    <a href="{% url 'reports:collections' %}" class="stat-link">View report →</a>
+  </div>
+</div>
+
+<div class="section-heading"><h3>Needs Attention</h3><div class="rule"></div></div>
+<div class="stat-row animated" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card danger">
+    <div class="stat-label">Overdue Installments</div>
+    <div class="stat-value">{{ overdue_count }}</div>
+    <div class="stat-sub">₹{{ overdue_amount }} overdue</div>
+    <a href="{% url 'reports:overdue' %}" class="stat-link">View overdue list →</a>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Due in Next 7 Days</div>
+    <div class="stat-value">{{ upcoming_count }}</div>
+    <div class="stat-sub">₹{{ upcoming_amount }} coming due</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Invested (Pool Balance)</div>
+    <div class="stat-value {% if total_invested < 0 %}negative{% endif %}">₹{{ total_invested }}</div>
+  </div>
+</div>
+{% endblock %}

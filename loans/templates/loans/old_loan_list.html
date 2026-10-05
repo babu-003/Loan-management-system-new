@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Loans</h1>
+  <div>
+    <a href="{% url 'loans:group_list' %}" class="btn secondary">Loan Groups</a>
+    <a href="{% url 'loans:add' %}" class="btn">+ New Loan</a>
+  </div>
+</div>
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group"><label>{{ search_form.q.label }}</label>{{ search_form.q }}</div>
+    <div class="form-group"><label>Status</label>{{ search_form.status }}</div>
+    <div class="form-group"><label>Loan Type</label>{{ search_form.loan_type }}</div>
+    <div class="form-group" style="align-self:flex-end;"><button class="btn">Filter</button></div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Loan No.</th><th>Customer</th><th>Group</th><th>Principal</th><th>Total Payable</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in page_obj %}
+        <tr>
+          <td>{{ loan.loan_number }}</td>
+          <td>{{ loan.customer.full_name }}</td>
+          <td>{% if loan.loan_group %}{{ loan.loan_group.group_id }}{% else %}<span class="muted">Individual</span>{% endif %}</td>
+          <td>₹{{ loan.principal_amount }}</td>
+          <td>₹{{ loan.total_payable }}</td>
+          <td>₹{{ loan.total_outstanding }}</td>
+          <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+          <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}<tr><td colspan="8" class="muted">No loans yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

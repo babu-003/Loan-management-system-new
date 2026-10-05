@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Invest Log</h1>
+
+<div class="card">
+  <div class="muted">Current Available Pool Balance</div>
+  <h2 style="{% if pool_balance < 0 %}color:#b91c1c;{% endif %}">Rs. {{ pool_balance }}</h2>
+</div>
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group"><label>Type</label>{{ form.entry_type }}</div>
+    <div class="form-group"><label>Investor</label>{{ form.investor }}</div>
+    <div class="form-group"><label>From</label>{{ form.date_from }}</div>
+    <div class="form-group"><label>To</label>{{ form.date_to }}</div>
+    <div class="form-group" style="align-self:flex-end;"><button class="btn">Filter</button></div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Added</th><th>Reduced</th><th>Balance After</th><th>Notes</th></tr></thead>
+    <tbody>
+      {% for entry in page_obj %}
+        <tr>
+          <td>{{ entry.created_at }}</td>
+          <td><span class="badge {% if entry.amount > 0 %}active{% else %}rejected{% endif %}">{{ entry.get_entry_type_display }}</span>{% if entry.edited_at %} <span class="badge pending">edited</span>{% endif %}</td>
+          <td>
+            {% if entry.investor %}<a href="{% url 'investments:investor_detail' entry.investor.pk %}">{{ entry.investor.investor_id }}</a>{% endif %}
+            {% if entry.loan %}<a href="{% url 'loans:detail' entry.loan.pk %}">{{ entry.loan.loan_number }}</a>{% endif %}
+            {% if entry.payment %}<a href="{% url 'payments:detail' entry.payment.pk %}">{{ entry.payment.receipt_number }}</a>{% endif %}
+          </td>
+          <td style="color:#15803d;">{% if entry.added_amount %}+Rs. {{ entry.added_amount }}{% endif %}</td>
+          <td style="color:#b91c1c;">{% if entry.reduced_amount %}-Rs. {{ entry.reduced_amount }}{% endif %}</td>
+          <td>Rs. {{ entry.balance_after }}</td>
+          <td class="muted">{{ entry.notes|default:"—" }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="7" class="muted">No activity yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

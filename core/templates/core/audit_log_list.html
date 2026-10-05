@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Audit Log</h1>
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group"><label>{{ form.q.label }}</label>{{ form.q }}</div>
+    <div class="form-group"><label>Entity Type</label>{{ form.entity_type }}</div>
+    <div class="form-group"><label>Action</label>{{ form.action }}</div>
+    <div class="form-group"><label>From</label>{{ form.date_from }}</div>
+    <div class="form-group"><label>To</label>{{ form.date_to }}</div>
+    <div class="form-group" style="align-self:flex-end;"><button class="btn">Filter</button></div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Entity</th><th>Changes</th></tr></thead>
+    <tbody>
+      {% for log in page_obj %}
+        <tr>
+          <td>{{ log.timestamp }}</td>
+          <td>{{ log.actor.full_name|default:log.actor.username|default:"—" }}</td>
+          <td><span class="badge {% if log.action == 'created' %}active{% elif log.action == 'deleted' %}rejected{% else %}pending{% endif %}">{{ log.get_action_display }}</span></td>
+          <td>{{ log.entity_type }} — {{ log.entity_label }}</td>
+          <td>
+            {% if log.changes %}
+              <ul style="margin:0;padding-left:16px;font-size:12px;">
+                {% for field, values in log.changes.items %}
+                  {% if log.action == "updated" %}
+                    <li>{{ field }}: {{ values.0 }} → {{ values.1 }}</li>
+                  {% else %}
+                    <li>{{ field }}: {{ values }}</li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="5" class="muted">No activity recorded yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Prev</a>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

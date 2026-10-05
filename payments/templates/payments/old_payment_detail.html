@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ payment.receipt_number }}</h1>
+    <p class="muted">
+      Loan: <a href="{% url 'loans:detail' payment.loan.pk %}">{{ payment.loan.loan_number }}</a>
+      · {{ payment.loan.customer.full_name }} · {{ payment.payment_date }}
+    </p>
+  </div>
+  <a href="{% url 'payments:edit' payment.pk %}" class="btn secondary">Edit</a>
+</div>
+
+<div class="card">
+  <div class="form-grid">
+    <div><strong>Amount Paid:</strong> ₹{{ payment.amount_paid }}</div>
+    {% if payment.previous_amount %}<div><strong>Previous Amount:</strong> ₹{{ payment.previous_amount }} <span class="muted">(edited {{ payment.edited_at }})</span></div>{% endif %}
+    {% if payment.unallocated_amount > 0 %}<div><strong>Unapplied:</strong> ₹{{ payment.unallocated_amount }} <span class="muted">(loan had no remaining balance)</span></div>{% endif %}
+  </div>
+  {% if payment.remarks %}<p class="muted">{{ payment.remarks }}</p>{% endif %}
+</div>
+
+<div class="card">
+  <h3>Applied To</h3>
+  <table>
+    <thead><tr><th>Installment #</th><th>Due Date</th><th>Amount Applied</th></tr></thead>
+    <tbody>
+      {% for allocation in allocations %}
+        <tr>
+          <td>{{ allocation.installment.installment_number }}</td>
+          <td>{{ allocation.installment.due_date }}</td>
+          <td>₹{{ allocation.amount_allocated }}</td>
+        </tr>
+      {% empty %}<tr><td colspan="3" class="muted">Not applied to any installment.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

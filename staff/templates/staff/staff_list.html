@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Staff{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+  <div>
+    <h1>Staff</h1>
+    <p class="muted">Manage collection staff and see their assigned loan work.</p>
+  </div>
+  <a href="{% url 'staff:add' %}" class="btn">+ Create Staff</a>
+</div>
+
+<div class="cards" style="margin-top:18px;display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+  <div class="card"><div class="muted">Total Staff</div><h2>{{ total_count }}</h2></div>
+  <div class="card"><div class="muted">Active Staff</div><h2>{{ active_count }}</h2></div>
+</div>
+
+<div class="card">
+  <form method="get" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+    <div class="form-group" style="margin:0;min-width:260px;">
+      <label>Search</label>
+      <input type="text" name="q" value="{{ query }}" placeholder="Name, employee ID or mobile">
+    </div>
+    <div class="form-group" style="margin:0;min-width:160px;">
+      <label>Status</label>
+      <select name="status">
+        <option value="">All statuses</option>
+        {% for value,label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="btn" type="submit">Filter</button>
+    <a class="btn secondary" href="{% url 'staff:list' %}">Clear</a>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Employee ID</th><th>Staff</th><th>Mobile</th><th>Status</th><th>Assigned Loans</th><th>Active</th><th>Completed</th><th></th></tr></thead>
+    <tbody>
+      {% for member in staff_list %}
+      <tr>
+        <td>{{ member.employee_id }}</td>
+        <td><a href="{% url 'staff:detail' member.pk %}"><strong>{{ member.full_name }}</strong></a></td>
+        <td>{{ member.mobile }}</td>
+        <td><span class="badge {{ member.status }}">{{ member.get_status_display }}</span></td>
+        <td>{{ member.assigned_count }}</td>
+        <td>{{ member.active_count }}</td>
+        <td>{{ member.completed_count }}</td>
+        <td><a href="{% url 'staff:detail' member.pk %}" class="btn small secondary">View Profile</a></td>
+      </tr>
+      {% empty %}<tr><td colspan="8" class="muted">No staff found.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

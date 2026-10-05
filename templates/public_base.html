@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Loan Management System{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/3_app.css' %}">
+</head>
+<body class="public-body">
+  <nav class="topbar">
+    <a href="{% url 'public:home' %}" class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="16" cy="23" rx="11" ry="4" fill="#97701f"/>
+        <ellipse cx="16" cy="20" rx="11" ry="4" fill="#c1912f"/>
+        <ellipse cx="16" cy="17" rx="11" ry="4" fill="#97701f"/>
+        <ellipse cx="16" cy="14" rx="11" ry="4" fill="#c1912f"/>
+        <ellipse cx="16" cy="11" rx="11" ry="4" fill="#e3b45a"/>
+        <path class="coin-shine" d="M8 9 L11 12 L8 15" stroke="#fff8e8" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="brand-name">{{ company_name|default:"Loan Management System" }}</span>
+    </a>
+    <div class="public-nav-links">
+    <!-- <a href="{% url 'public:home' %}" class="{% if request.resolver_match.url_name == 'home' %}current{% endif %}">Home</a>
+      <a href="{% url 'public:about' %}" class="{% if request.resolver_match.url_name == 'about' %}current{% endif %}">About</a>
+      <a href="{% url 'public:contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}current{% endif %}">Contact</a>-->
+      <a href="{% url 'accounts:login' %}" class="btn-login">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Login
+      </a>
+    </div>
+  </nav>
+
+  {% if messages %}
+    <ul class="messages" style="max-width:600px;margin:20px auto 0;">
+      {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  <footer class="public-footer">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px;">
+          <svg class="brand-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <ellipse cx="16" cy="23" rx="11" ry="4" fill="#97701f"/><ellipse cx="16" cy="20" rx="11" ry="4" fill="#c1912f"/><ellipse cx="16" cy="17" rx="11" ry="4" fill="#97701f"/><ellipse cx="16" cy="14" rx="11" ry="4" fill="#c1912f"/><ellipse cx="16" cy="11" rx="11" ry="4" fill="#e3b45a"/>
+          </svg>
+          <span>{{ company_name|default:"Loan Management System" }}</span>
+        </div>
+        <p style="font-size:13.5px;max-width:260px;line-height:1.6;">Straightforward loans, transparent terms, and a team that actually picks up the phone.</p>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <a href="{% url 'public:home' %}">Home</a>
+        <a href="{% url 'public:about' %}">About Us</a>
+        <a href="{% url 'public:contact' %}">Contact</a>
+      </div>
+      <div>
+        <h5>Loans</h5>
+        <a href="{% url 'loans:calculator' %}">EMI Calculator</a>
+        <a href="{% url 'public:contact' %}">Apply Now</a>
+      </div>
+      <div>
+        <h5>Account</h5>
+        <a href="{% url 'accounts:login' %}">Login</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© {% now "Y" %} {{ company_name|default:"Loan Management System" }}. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Reveal-on-scroll: adds .in-view to .reveal elements as they enter the viewport.
+    (function () {
+      var els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window) || !els.length) {
+        els.forEach(function (el) { el.classList.add('in-view'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      els.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

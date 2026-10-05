@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div><h1>{{ title }}</h1><p class="muted">Create or update a collection staff member.</p></div>
+  <a href="{% url 'staff:list' %}" class="btn secondary">Back to Staff</a>
+</div>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group {% if field.name == 'address' or field.name == 'notes' %}full{% endif %}">
+          <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+          {{ field }}
+          {{ field.errors }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button type="submit" class="btn">Save Staff</button>
+      <a href="{% url 'staff:list' %}" class="btn secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
