@@ -10,8 +10,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import InstallmentDueDateForm, LoanForm, LoanGroupForm, LoanSearchForm
-from .models import Installment, Loan, LoanGroup
+from .forms import InstallmentDueDateForm, LoanForm, LoanGroupForm, LoanSearchForm , LoanGroupMemberForm
+from .models import Installment, Loan, LoanGroup,LoanGroupMember
 
 DONUT_RADIUS = 60
 DONUT_CIRCUMFERENCE = 2 * math.pi * DONUT_RADIUS
@@ -86,32 +86,77 @@ def loan_list(request):
     })
 
 
+
 @login_required
 @transaction.atomic
-def loan_create(request):
+def loan_create(request, group_pk=None):
     initial = {}
-    group_id = request.GET.get("group")
+
     customer_id = request.GET.get("customer")
-    if group_id:
-        initial["loan_group"] = group_id
+    group_id = request.GET.get("group")
+
+    group = None
+
+    # Group-specific Add Loan URL
+    if group_pk:
+        group = get_object_or_404(
+            LoanGroup,
+            pk=group_pk,
+            status=LoanGroup.STATUS_ACTIVE,
+        )
+
+    # Group selected through the normal Add Loan page
+    elif group_id:
+        group = get_object_or_404(
+            LoanGroup,
+            pk=group_id,
+            status=LoanGroup.STATUS_ACTIVE,
+        )
+
+    if group:
+        initial["loan_group"] = group.pk
+
     if customer_id:
         initial["customer"] = customer_id
 
     if request.method == "POST":
-        form = LoanForm(request.POST)
+        # Only show customers belonging to the selected group
+        form = LoanForm(request.POST, group=group)
+
         if form.is_valid():
             loan = form.save(commit=False)
+
+            if group is not None:
+                loan.loan_group = group
+
             from .models import LoanIDCounter
+
             loan.loan_number = LoanIDCounter.next_loan_number()
             loan.compute_totals()
             loan.full_clean()
             loan.save()
             loan.generate_installment_schedule()
-            messages.success(request, f"Loan {loan.loan_number} created with {loan.number_of_installments} installments.")
+
+            messages.success(
+                request,
+                f"Loan {loan.loan_number} created with "
+                f"{loan.number_of_installments} installments.",
+            )
+
             return redirect("loans:detail", pk=loan.pk)
+
     else:
-        form = LoanForm(initial=initial)
-    return render(request, "loans/loan_form.html", {"form": form})
+        form = LoanForm(initial=initial, group=group)
+
+    return render(
+        request,
+        "loans/loan_form.html",
+        {
+            "form": form,
+            "group": group,
+        },
+    )
+
 
 
 @login_required
@@ -257,13 +302,46 @@ def loan_group_create(request):
     return render(request, "loans/loangroup_form.html", {"form": form})
 
 
+
+@login_required
+@transaction.atomic
+def loan_group_add_member(request, pk):
+    group = get_object_or_404(LoanGroup, pk=pk, status=LoanGroup.STATUS_ACTIVE)
+    if request.method == "POST":
+        form = LoanGroupMemberForm(request.POST, group=group)
+        if form.is_valid():
+            member = LoanGroupMember.objects.create(
+                group=group,
+                customer=form.cleaned_data["customer"],
+            )
+            messages.success(
+                request,
+                f"{member.customer.full_name} added to {group.group_id}. Now create their loan.",
+            )
+            return redirect(
+                f"{reverse('loans:add')}?group={group.pk}&customer={member.customer.pk}"
+            )
+    else:
+        form = LoanGroupMemberForm(group=group)
+    return render(
+        request,
+        "loans/loangroup_add_member.html",
+        {"group": group, "form": form},
+    )
+
 @login_required
 def loan_group_detail(request, pk):
     group = get_object_or_404(LoanGroup, pk=pk)
-    return render(request, "loans/loangroup_detail.html", {"group": group, "loans": group.loans.select_related("customer")})
-
-
-from .forms import LoanCalculatorForm  # noqa: E402
+    members = group.members.select_related("customer").prefetch_related("customer__loans")
+    return render(
+        request,
+        "loans/loangroup_detail.html",
+        {
+            "group": group,
+            "members": members,
+            "loans": group.loans.select_related("customer"),
+        },
+    )
 
 
 @login_required

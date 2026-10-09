@@ -8,6 +8,7 @@
   {% if group.status == 'active' %}
     <a href="{% url 'loans:group_add_member' group.pk %}" class="btn">+ Add Member</a>
     <a href="{% url 'loans:group_add_loan' group.pk %}" class="btn">+ Add Loan</a>
+    
   {% endif %}
 </div>
 
