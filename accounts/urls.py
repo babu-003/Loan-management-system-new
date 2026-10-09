@@ -10,6 +10,7 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("profile/", views.profile, name="profile"),
     path("recovery/", views.recover_account, name="recover_account"),
+    path("master-recovery/", views.recover_account_master, name="master_recovery"),
     path("profile/recovery-code/", views.set_recovery_code, name="set_recovery_code"),
     path(
         "password-change/",

@@ -21,6 +21,7 @@ class PaymentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["loan"].queryset = Loan.objects.filter(status=Loan.STATUS_ACTIVE)
         self.fields["remarks"].required = False
+        self.fields["transaction_id"].required = False
 
     def clean_payment_mode(self):
         return self.cleaned_data.get("payment_mode") or Payment.PAYMENT_MODE_CASH
@@ -31,9 +32,9 @@ class PaymentForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         mode = cleaned_data.get("payment_mode")
-        transaction_id = cleaned_data.get("transaction_id")
-        if mode == Payment.PAYMENT_MODE_ONLINE and not transaction_id:
-            self.add_error("transaction_id", "Transaction ID is required for online payments.")
+        #transaction_id = cleaned_data.get("transaction_id")
+        '''if mode == Payment.PAYMENT_MODE_ONLINE and not transaction_id:
+            self.add_error("transaction_id", "Transaction ID is required for online payments.")'''
         if mode == Payment.PAYMENT_MODE_CASH:
             cleaned_data["transaction_id"] = ""
         return cleaned_data
@@ -67,8 +68,8 @@ class PaymentEditForm(forms.ModelForm):
         cleaned_data = super().clean()
         mode = cleaned_data.get("payment_mode")
         transaction_id = cleaned_data.get("transaction_id")
-        if mode == Payment.PAYMENT_MODE_ONLINE and not transaction_id:
-            self.add_error("transaction_id", "Transaction ID is required for online payments.")
+        '''if mode == Payment.PAYMENT_MODE_ONLINE and not transaction_id:
+            self.add_error("transaction_id", "Transaction ID is required for online payments.")'''
         if mode == Payment.PAYMENT_MODE_CASH:
             cleaned_data["transaction_id"] = ""
         return cleaned_data

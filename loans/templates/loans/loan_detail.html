@@ -33,6 +33,7 @@
 
 <div style="text-align:right;margin:14px 0;">
   <a href="{% url 'payments:add' %}?loan={{ loan.pk }}" class="btn">Record Payment</a>
+   <a href="{% url 'loans:repayment_card_pdf' loan.pk %}" class="btn secondary">Download Customer Repayment Card (PDF)</a>
   <a href="{% url 'documents:generate_agreement' loan.pk %}" class="btn secondary">Generate Agreement</a>
   <a href="{% url 'documents:generate_closing' loan.pk %}" class="btn secondary">Generate Closing Doc</a>
 </div>
@@ -40,7 +41,7 @@
 <div class="card">
   <div class="form-grid">
     <div><strong>Principal:</strong> ₹{{ loan.principal_amount }}</div>
-    <div><strong>Interest Rate:</strong> {{ loan.interest_rate }}% p.a. ({{ loan.interest_type.name }})</div>
+    <div><strong>{% if loan.interest_type.calculation_method == "fixed" %}Fixed Interest{% else %}Interest Rate{% endif %}:</strong> {% if loan.interest_type.calculation_method == "fixed" %}₹{{ loan.interest_rate|floatformat:2 }} × 100 = ₹{% widthratio loan.interest_rate 1 100 %} per installment{% else %}{{ loan.interest_rate }}% p.a.{% endif %} ({{ loan.interest_type.name }})</div>
     <div><strong>Total Interest:</strong> ₹{{ loan.total_interest }}</div>
     <div><strong>Total Payable:</strong> ₹{{ loan.total_payable }}</div>
     <div><strong>Repayment:</strong> {{ loan.get_repayment_frequency_display }} · {{ loan.number_of_installments }} installments</div>

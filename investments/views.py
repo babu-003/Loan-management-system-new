@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .forms import DepositEditForm, DepositForm, InvestorForm, LedgerFilterForm
 from .models import (
@@ -48,23 +49,74 @@ def investor_detail(request, pk):
 def deposit_add(request):
     initial = {}
     investor_pk = request.GET.get("investor")
+
     if investor_pk:
         initial["investor"] = investor_pk
 
     if request.method == "POST":
         form = DepositForm(request.POST)
+
         if form.is_valid():
             investor = form.cleaned_data["investor"]
             amount = form.cleaned_data["amount"]
-            record_ledger_entry(
-                InvestmentLedgerEntry.TYPE_DEPOSIT, amount=amount, investor=investor,
+
+            # Create the investment ledger entry and store it.
+            entry = record_ledger_entry(
+                InvestmentLedgerEntry.TYPE_DEPOSIT,
+                amount=amount,
+                investor=investor,
                 notes=form.cleaned_data.get("notes", ""),
             )
-            messages.success(request, f"Deposit of Rs. {amount} recorded for {investor.full_name}.")
-            return redirect("investments:investor_detail", pk=investor.pk)
+
+            from accounting.models import (
+                Voucher,
+                create_voucher,
+                get_investor_account,
+                get_cash_account,
+                get_bank_account,
+            )
+
+            money_account = (
+                get_cash_account()
+                if form.cleaned_data["payment_mode"] == "cash"
+                else get_bank_account()
+            )
+
+            create_voucher(
+                voucher_type=Voucher.TYPE_BORROWING,
+                amount=amount,
+                debit_account=money_account,
+                credit_account=get_investor_account(investor),
+                voucher_date=timezone.localdate(),
+                payment_mode=form.cleaned_data["payment_mode"],
+                transaction_id=form.cleaned_data.get("transaction_id", ""),
+                party_name=investor.full_name,
+                narration=(
+                    form.cleaned_data.get("notes", "")
+                    or f"Investor borrowing received from {investor.full_name}."
+                ),
+                source_type="investment_deposit",
+                source_id=f"investment_deposit:{entry.pk}",
+            )
+
+            messages.success(
+                request,
+                f"Deposit of Rs. {amount} recorded for {investor.full_name}.",
+            )
+
+            return redirect(
+                "investments:investor_detail",
+                pk=investor.pk,
+            )
+
     else:
         form = DepositForm(initial=initial)
-    return render(request, "investments/deposit_form.html", {"form": form})
+
+    return render(
+        request,
+        "investments/deposit_form.html",
+        {"form": form},
+    )
 
 
 @login_required

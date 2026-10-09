@@ -457,7 +457,180 @@
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 12px;
+}
 
+.section-heading h3 {
+  margin: 0;
+}
+
+.section-heading .rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dash-welcome {
+  margin-bottom: 4px;
+}
+
+.dash-welcome .date {
+  color: var(--color-muted);
+  font-size: 13.5px;
+}
+
+/* --- Donut chart (portfolio breakdown) --- */
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+
+.donut-chart svg {
+  transform: rotate(-90deg);
+}
+
+.donut-chart circle.segment {
+  transition: stroke-dasharray 0.8s ease-out;
+}
+
+.donut-center-label {
+  text-align: center;
+}
+
+.donut-center-label .value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.donut-center-label .label {
+  font-size: 11.5px;
+  color: var(--color-muted);
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+
+.donut-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.donut-legend-item .count {
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-left: 2px;
+}
+
+/* --- Progress bar (loan repayment progress) --- */
+.progress-track {
+  width: 100%;
+  height: 10px;
+  background: var(--color-bg);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+  width: 0;
+  animation: progressGrow 1s ease-out 0.15s forwards;
+}
+
+@keyframes progressGrow {
+  to {
+    width: var(--progress-pct);
+  }
+}
+
+/* --- Simple two-bar comparison chart (loan calculator) --- */
+.compare-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 32px;
+  height: 160px;
+  padding: 10px 0 0;
+}
+
+.compare-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.compare-bar-track {
+  width: 100%;
+  max-width: 64px;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.compare-bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  height: 0;
+  animation: barGrow 0.9s ease-out 0.15s forwards;
+}
+
+@keyframes barGrow {
+  to {
+    height: var(--bar-pct);
+  }
+}
+
+.compare-bar-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.compare-bar-label {
+  font-size: 12.5px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-row.animated .stat-card {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .progress-fill {
+    animation: none !important;
+    width: var(--progress-pct) !important;
+  }
+
+  .compare-bar-fill {
+    animation: none !important;
+    height: var(--bar-pct) !important;
+  }
+}
   @media (max-width: 760px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
   
   .empty-state { text-align: center; padding: 44px 20px; color: var(--color-muted); }

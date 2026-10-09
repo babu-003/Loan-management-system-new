@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="display:flex;justify-content:space-between;align-items:center;">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;">
   <div>
     <h1>{{ group.group_id }} — {{ group.group_name }}</h1>
     <p class="muted">{{ group.description }}</p>
   </div>
-  <a href="{% url 'loans:add' %}?group={{ group.pk }}" class="btn">+ Add Member Loan</a>
+  {% if group.status == 'active' %}
+    <a href="{% url 'loans:group_add_member' group.pk %}" class="btn">+ Add Member</a>
+    <a href="{% url 'loans:group_add_loan' group.pk %}" class="btn">+ Add Loan</a>
+  {% endif %}
 </div>
 
 <div class="stat-row animated" style="grid-template-columns:repeat(5,1fr);">
@@ -32,29 +35,49 @@
 </div>
 
 <div class="card">
-  <h3>Member Loans</h3>
+  <h3>Group Members</h3>
   <table>
-    <thead><tr><th>Loan No.</th><th>Customer</th><th>Principal</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>Customer ID</th><th>Customer</th><th>Mobile</th><th>Loan</th><th>Status</th><th></th></tr></thead>
     <tbody>
-      {% for loan in loans %}
+      {% for member in members %}
+        {% with member_loan=member.customer.loans.all|first %}
         <tr>
-          <td>{{ loan.loan_number }}</td>
+          <td>{{ member.customer.customer_id }}</td>
           <td>
             <div class="name-cell">
-              <div class="avatar">{{ loan.customer.full_name|slice:":1" }}</div>
-              {{ loan.customer.full_name }}
+              <div class="avatar">{{ member.customer.full_name|slice:":1" }}</div>
+              {{ member.customer.full_name }}
             </div>
           </td>
-          <td>₹{{ loan.principal_amount }}</td>
-          <td>₹{{ loan.total_outstanding }}</td>
-          <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
-          <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+          <td>{{ member.customer.mobile }}</td>
+          <td>
+            {% if member_loan %}
+              <a href="{% url 'loans:detail' member_loan.pk %}">{{ member_loan.loan_number }}</a>
+            {% else %}
+              <span class="muted">No loan yet</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if member_loan %}
+              <span class="badge {{ member_loan.status }}">{{ member_loan.get_status_display }}</span>
+            {% else %}
+              <span class="badge">Member only</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if not member_loan and group.status == 'active' %}
+              <a href="{% url 'loans:add' %}?group={{ group.pk }}&customer={{ member.customer.pk }}" class="btn small">Give Loan</a>
+            {% elif member_loan %}
+              <a href="{% url 'loans:detail' member_loan.pk %}" class="btn small secondary">View</a>
+            {% endif %}
+          </td>
         </tr>
+        {% endwith %}
       {% empty %}
         <tr><td colspan="6">
           <div class="empty-state">
             <div class="empty-state-icon">👥</div>
-            <p>No member loans yet.</p>
+            <p>No members in this group yet.</p>
           </div>
         </td></tr>
       {% endfor %}

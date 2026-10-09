@@ -1,0 +1,18 @@
+{% extends "accounting/base_accounting.html" %}
+{% block title %}Accounting Dashboard{% endblock %}
+{% block accounting_content %}
+<h1>Accounting Dashboard</h1>
+<p class="muted">Debit, Credit, Expense, Borrowing, Repayment and Investment.</p>
+<div class="stat-row">
+  <div class="stat-card"><div class="stat-label">Cash Balance</div><div class="stat-value">₹{{ cash_balance|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="stat-label">Bank Balance</div><div class="stat-value">₹{{ bank_balance|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="stat-label">Total Debit</div><div class="stat-value">₹{{ total_debit|floatformat:2 }}</div></div>
+  <div class="stat-card"><div class="stat-label">Total Credit</div><div class="stat-value">₹{{ total_credit|floatformat:2 }}</div></div>
+</div>
+<div class="card">
+  <div class="section-heading"><h3>Recent Vouchers</h3><span class="rule"></span><a href="{% url 'accounting:voucher_list' %}">View all</a></div>
+  <table class="table"><thead><tr><th>Voucher</th><th>Date</th><th>Type</th><th>Amount</th><th>Mode</th></tr></thead><tbody>
+  {% for v in vouchers %}<tr><td><a href="{% url 'accounting:voucher_detail' v.pk %}">{{ v.voucher_number }}</a></td><td>{{ v.voucher_date }}</td><td>{{ v.get_voucher_type_display }}</td><td>₹{{ v.amount|floatformat:2 }}</td><td>{{ v.get_payment_mode_display }}</td></tr>{% empty %}<tr><td colspan="5">No vouchers yet.</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% endblock %}

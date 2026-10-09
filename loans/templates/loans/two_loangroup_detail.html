@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <h1>{{ group.group_id }} — {{ group.group_name }}</h1>
+    <p class="muted">{{ group.description }}</p>
+  </div>
+  <a href="{% url 'loans:add' %}?group={{ group.pk }}" class="btn">+ Add Member Loan</a>
+</div>
+
+<div class="stat-row animated" style="grid-template-columns:repeat(5,1fr);">
+  <div class="stat-card">
+    <div class="stat-label">Members</div>
+    <div class="stat-value">{{ group.member_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Principal</div>
+    <div class="stat-value">₹{{ group.total_principal }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Payable</div>
+    <div class="stat-value">₹{{ group.total_payable }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">Total Paid</div>
+    <div class="stat-value">₹{{ group.total_paid }}</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="stat-label">Outstanding</div>
+    <div class="stat-value">₹{{ group.total_outstanding }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Member Loans</h3>
+  <table>
+    <thead><tr><th>Loan No.</th><th>Customer</th><th>Principal</th><th>Outstanding</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in loans %}
+        <tr>
+          <td>{{ loan.loan_number }}</td>
+          <td>
+            <div class="name-cell">
+              <div class="avatar">{{ loan.customer.full_name|slice:":1" }}</div>
+              {{ loan.customer.full_name }}
+            </div>
+          </td>
+          <td>₹{{ loan.principal_amount }}</td>
+          <td>₹{{ loan.total_outstanding }}</td>
+          <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
+          <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">
+          <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <p>No member loans yet.</p>
+          </div>
+        </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

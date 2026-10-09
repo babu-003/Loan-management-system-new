@@ -1,20 +1,68 @@
 {% extends "base.html" %}
+
 {% block content %}
 <h1>Record Deposit</h1>
+
 <div class="card">
   <form method="post">
     {% csrf_token %}
+
     <div class="form-grid">
       {% for field in form.visible_fields %}
-        <div class="form-group">
-          <label>{{ field.label }}</label>
-          {{ field }}
-          {{ field.errors }}
-        </div>
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">
+          {{ field.label }}
+        </label>
+
+        {{ field }}
+        {{ field.errors }}
+      </div>
       {% endfor %}
     </div>
-    <button class="btn" style="margin-top:14px;">Save Deposit</button>
-    <a href="{% url 'investments:investor_list' %}" class="btn secondary">Cancel</a>
+
+    <button class="btn" style="margin-top: 14px;">
+      Save Deposit
+    </button>
+
+    <a href="{% url 'investments:investor_list' %}" class="btn secondary">
+      Cancel
+    </a>
   </form>
 </div>
+
+<script>
+  (function () {
+    const paymentMode = document.getElementById("id_payment_mode");
+    const transactionId = document.getElementById("id_transaction_id");
+
+    if (!paymentMode || !transactionId) {
+      return;
+    }
+
+    function toggleTransactionField() {
+      const transactionGroup =
+        transactionId.closest(".form-group");
+
+      const isOnline = paymentMode.value.toLowerCase() === "online";
+
+      if (transactionGroup) {
+        transactionGroup.style.display = isOnline ? "" : "none";
+      }
+
+      // Transaction ID is required only for Online payments.
+      transactionId.required = false;
+
+      // Clear the transaction ID when Cash is selected.
+      if (!isOnline) {
+        transactionId.value = "";
+      }
+    }
+
+    paymentMode.addEventListener("change", toggleTransactionField);
+
+    // Set the correct visibility when the page loads.
+    toggleTransactionField();
+  })();
+</script>
+
 {% endblock %}

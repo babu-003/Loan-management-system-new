@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Record Deposit</h1>
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+    <button class="btn" style="margin-top:14px;">Save Deposit</button>
+    <a href="{% url 'investments:investor_list' %}" class="btn secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

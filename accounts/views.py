@@ -1,8 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+
+from .models import AdminUser, MasterRecovery
 from django.shortcuts import redirect, render
 
-from .forms import AccountRecoveryForm, AdminProfileForm, RecoveryCodeForm
+from .forms import (
+    AccountRecoveryForm,
+    AdminProfileForm,
+    MasterAccountRecoveryForm,
+    RecoveryCodeForm,
+)
 
 
 @login_required
@@ -61,3 +68,27 @@ def recover_account(request):
         form = AccountRecoveryForm()
 
     return render(request, "accounts/recover_account.html", {"form": form})
+
+
+def recover_account_master(request):
+    if request.method == "POST":
+        form = MasterAccountRecoveryForm(request.POST)
+        if form.is_valid():
+            user = form.find_user()
+            if user is None:
+                if not MasterRecovery.objects.exists():
+                    form.add_error("recovery_code", "Master recovery has not been configured yet.")
+                elif AdminUser.objects.filter(is_active=True).count() > 1 and not (form.cleaned_data.get("current_username") or "").strip():
+                    form.add_error("current_username", "Enter the current username because multiple active admin accounts exist.")
+                else:
+                    form.add_error("recovery_code", "Invalid master recovery details.")
+            else:
+                user.username = form.cleaned_data["new_username"].strip()
+                user.set_password(form.cleaned_data["new_password"])
+                user.save(update_fields=["username", "password"])
+                messages.success(request, "Username and password changed. Please log in with your new credentials.")
+                return redirect("accounts:login")
+    else:
+        form = MasterAccountRecoveryForm()
+
+    return render(request, "accounts/master_recovery.html", {"form": form})

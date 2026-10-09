@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:620px;margin:24px auto;">
+  <h1>Delete Loan</h1>
+  <p>Loan: <strong>{{ loan.loan_number }}</strong></p>
+  <p>Customer: <strong>{{ loan.customer.full_name }} ({{ loan.customer.customer_id }})</strong></p>
+  <p>Principal amount: <strong>₹{{ loan.principal_amount }}</strong></p>
+  <p>This permanently deletes the loan and its related installment/document/notice records. This action cannot be undone.</p>
+  {% if has_payments %}
+    <div class="card" style="border:1px solid var(--color-danger, #b91c1c);">
+      <strong>Deletion blocked for financial safety.</strong> This loan has recorded payments. Its payment history must be preserved, so it cannot be deleted through this option.
+    </div>
+    <a href="{% url 'customers:detail' loan.customer.pk %}?tab=loans" class="btn secondary">Back to Customer Loans</a>
+  {% else %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_password">Enter your current login password to confirm</label>
+        <input id="id_password" name="password" type="password" class="form-control" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn danger" onclick="return confirm('Permanently delete this loan?');">Confirm Delete Loan</button>
+      <a href="{% url 'customers:detail' loan.customer.pk %}?tab=loans" class="btn secondary">Cancel</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

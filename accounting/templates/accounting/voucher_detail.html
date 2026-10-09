@@ -1,0 +1,135 @@
+{% extends "accounting/base_accounting.html" %}
+
+{% block title %}
+Voucher {{ voucher.voucher_number }}
+{% endblock %}
+
+{% block accounting_content %}
+
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+">
+
+    <div>
+        <h1>{{ voucher.voucher_number }}</h1>
+
+        <p class="muted">
+            {{ voucher.get_voucher_type_display }}
+            ·
+            {{ voucher.voucher_date }}
+        </p>
+    </div>
+
+    <div>
+        <a href="{% url 'accounting:download_voucher' voucher.pk %}" style="
+                display:inline-flex;
+                align-items:center;
+                gap:8px;
+                padding:10px 16px;
+                background:#0a2b2c;
+                color:white;
+                text-decoration:none;
+                border-radius:6px;
+                font-weight:600;
+            ">
+            ↓ Download Voucher
+        </a>
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <p>
+        <strong>Amount:</strong>
+        ₹{{ voucher.amount|floatformat:2 }}
+    </p>
+
+    <p>
+        <strong>Payment Mode:</strong>
+        {{ voucher.get_payment_mode_display }}
+    </p>
+
+    {% if voucher.transaction_id %}
+    <p>
+        <strong>Transaction ID:</strong>
+        {{ voucher.transaction_id }}
+    </p>
+    {% endif %}
+
+    <p>
+        <strong>Party:</strong>
+        {{ voucher.party_name|default:"—" }}
+    </p>
+
+    {% if voucher.category %}
+    <p>
+        <strong>Category:</strong>
+        {{ voucher.category.name }}
+    </p>
+    {% endif %}
+
+    <p>
+        <strong>Narration:</strong>
+        {{ voucher.narration|default:"—" }}
+    </p>
+
+</div>
+
+
+<div class="card">
+
+    <h3>Debit / Credit</h3>
+
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>Ledger Account</th>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for e in voucher.entries.all %}
+
+            <tr>
+
+                <td>
+                    {{ e.ledger_account.name }}
+                </td>
+
+                <td>
+                    {% if e.debit %}
+                    ₹{{ e.debit|floatformat:2 }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if e.credit %}
+                    ₹{{ e.credit|floatformat:2 }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}

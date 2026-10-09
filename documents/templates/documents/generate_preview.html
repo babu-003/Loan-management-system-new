@@ -1,20 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>{{ title }} — {{ loan.loan_number }}</h1>
-<p class="muted">Review and edit the text below if needed, then download. The details table (always accurate, pulled live from this loan) will be printed above this text on the document.</p>
+<p class="muted">Choose the language, review and edit the text below if needed, then download. The details table (always accurate, pulled live from this loan) will be printed above this text on the document.</p>
 
-<div class="card">
-  <h3>Details that will appear on the document</h3>
-  <table>
-    {% for label, value in details_rows %}
-      <tr><th style="width:40%;">{{ label }}</th><td>{{ value }}</td></tr>
+<form method="post">
+  {% csrf_token %}
+
+  <div class="card">
+    <h3>Language / மொழி</h3>
+    <div style="display:flex;gap:20px;">
+      {% for radio in form.language %}
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">{{ radio.tag }} {{ radio.choice_label }}</label>
+      {% endfor %}
+    </div>
+    {{ form.language.errors }}
+  </div>
+
+  <div class="card">
+    <h3>Details that will appear on the document</h3>
+    {% for lang, bundle in bundles.items %}
+      <div data-lang-panel="{{ lang }}">
+        <table>
+          {% for label, value in bundle.details_rows %}
+            <tr><th style="width:40%;">{{ label }}</th><td>{{ value }}</td></tr>
+          {% endfor %}
+        </table>
+      </div>
     {% endfor %}
-  </table>
-</div>
+  </div>
 
-<div class="card">
-  <form method="post">
-    {% csrf_token %}
+  <div class="card">
     <div class="form-group full">
       <label>Document Text (editable)</label>
       {{ form.body_text }}
@@ -22,6 +37,39 @@
     </div>
     <button class="btn" style="margin-top:12px;">Download PDF</button>
     <a href="{% url 'loans:detail' loan.pk %}" class="btn secondary">Cancel</a>
-  </form>
-</div>
+  </div>
+</form>
+
+{{ bodies|json_script:"preview-bodies" }}
+<script>
+(function () {
+  var bodies = JSON.parse(document.getElementById('preview-bodies').textContent);
+  var textarea = document.getElementById('id_body_text');
+  var radios = document.querySelectorAll('input[name="language"]');
+  var checked = document.querySelector('input[name="language"]:checked');
+  var current = checked ? checked.value : 'ta';
+
+  // Whatever is in the box right now belongs to the selected language
+  // (matters when the page is re-shown after a validation error).
+  bodies[current] = textarea.value;
+
+  function showPanels(lang) {
+    document.querySelectorAll('[data-lang-panel]').forEach(function (el) {
+      el.style.display = el.getAttribute('data-lang-panel') === lang ? '' : 'none';
+    });
+    textarea.setAttribute('lang', lang);
+  }
+
+  radios.forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      bodies[current] = textarea.value;   // keep edits made in the old language
+      current = radio.value;
+      textarea.value = bodies[current];
+      showPanels(current);
+    });
+  });
+
+  showPanels(current);
+})();
+</script>
 {% endblock %}

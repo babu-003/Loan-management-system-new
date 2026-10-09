@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:620px;margin:24px auto;">
+  <h1>Delete Customer</h1>
+  <p>You are about to permanently delete <strong>{{ customer.customer_id }} — {{ customer.full_name }}</strong>.</p>
+  <p>This removes the customer profile and its related customer records. This action cannot be undone.</p>
+  {% if has_loans %}
+    <div class="card" style="border:1px solid var(--color-danger, #b91c1c);">
+      <strong>Deletion blocked.</strong> This customer still has one or more loan records. Delete every loan from the Loans tab first. A customer cannot be deleted while any loan record remains.
+    </div>
+    <a href="{% url 'customers:detail' customer.pk %}?tab=loans" class="btn secondary">Back to Customer Loans</a>
+  {% else %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_password">Enter your current login password to confirm</label>
+        <input id="id_password" name="password" type="password" class="form-control" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn danger" onclick="return confirm('Permanently delete this customer?');">Confirm Delete Customer</button>
+      <a href="{% url 'customers:detail' customer.pk %}" class="btn secondary">Cancel</a>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

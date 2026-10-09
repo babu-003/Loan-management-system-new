@@ -1,0 +1,8 @@
+{% extends "accounting/base_accounting.html" %}
+{% block title %}Vouchers{% endblock %}
+{% block accounting_content %}
+<div style="display:flex;justify-content:space-between;align-items:center"><div><h1>Vouchers</h1><p class="muted">Every voucher is recorded with equal Debit and Credit.</p></div><a class="btn" href="{% url 'accounting:voucher_add' %}">+ Add Voucher</a></div>
+<div class="card"><table class="table"><thead><tr><th>Voucher No.</th><th>Date</th><th>Type</th><th>Party</th><th>Amount</th><th>Mode</th></tr></thead><tbody>
+{% for v in page_obj %}<tr><td><a href="{% url 'accounting:voucher_detail' v.pk %}">{{ v.voucher_number }}</a></td><td>{{ v.voucher_date }}</td><td>{{ v.get_voucher_type_display }}</td><td>{{ v.party_name|default:"—" }}</td><td>₹{{ v.amount|floatformat:2 }}</td><td>{{ v.get_payment_mode_display }}</td></tr>{% empty %}<tr><td colspan="6">No vouchers found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

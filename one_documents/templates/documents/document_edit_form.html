@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Edit Document — {{ document.customer.full_name }}</h1>
+<div class="card">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        <div class="form-group {% if field.field.widget.input_type == 'textarea' %}full{% endif %}">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+    </div>
+    {% if form.non_field_errors %}
+      <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if document.file %}<p class="muted">Current file: <a href="{{ document.file.url }}" target="_blank">view</a> — upload a new one above to replace it.</p>{% endif %}
+    <div style="margin-top:16px;">
+      <button class="btn">Save Changes</button>
+      <a href="{% url 'documents:list' %}" class="btn secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

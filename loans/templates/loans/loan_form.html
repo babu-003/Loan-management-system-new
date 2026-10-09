@@ -15,8 +15,33 @@
         </div>
       {% endfor %}
     </div>
-    <p class="muted" style="margin-top:14px;">Total interest, total payable and the installment schedule are generated automatically on save (flat interest = Principal × Rate × Duration).</p>
+    <p id="interest-help" class="muted" style="margin-top:14px;">Total interest, total payable and the installment schedule are generated automatically on save.</p>
     <button class="btn" style="margin-top:10px;">Create Loan</button>
   </form>
 </div>
+<script>
+(function () {
+  const typeSelect = document.getElementById("id_interest_type");
+  const rateInput = document.getElementById("id_interest_rate");
+  const help = document.getElementById("interest-help");
+  if (!typeSelect || !rateInput) return;
+  const rateGroup = rateInput.closest(".form-group");
+  const rateLabel = rateGroup ? rateGroup.querySelector("label") : null;
+  const rateHelp = rateGroup ? rateGroup.querySelector("small") : null;
+
+  function updateInterestLabel() {
+    const selected = typeSelect.options[typeSelect.selectedIndex];
+    const isFixed = !!selected && selected.text.trim().toLowerCase().includes("fixed interest");
+    if (rateLabel) rateLabel.textContent = isFixed ? "Fixed Interest" : "Interest Rate (% p.a.)";
+    if (rateHelp) rateHelp.textContent = isFixed
+      ? "Enter the fixed interest multiplier. For example, 1.6 means 160 interest per installment."
+      : "Annual interest rate expressed as a percentage per year.";
+    if (help) help.textContent = isFixed
+      ? "Fixed Interest: entered value × 100 is charged on every installment. Total interest = fixed installment interest × number of installments."
+      : "Total interest, total payable and the installment schedule are generated automatically on save.";
+  }
+  typeSelect.addEventListener("change", updateInterestLabel);
+  updateInterestLabel();
+})();
+</script>
 {% endblock %}

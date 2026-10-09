@@ -14,6 +14,7 @@ class SystemSettingsForm(forms.Form):
     customer_id_prefix = forms.CharField(max_length=10, required=True)
     loan_id_prefix = forms.CharField(max_length=10, required=True)
     group_id_prefix = forms.CharField(max_length=10, required=True)
+    staff_id_prefix = forms.CharField(max_length=10, required=True)
     receipt_id_prefix = forms.CharField(max_length=10, required=True)
     id_number_padding = forms.IntegerField(
         min_value=3, max_value=10, required=True,
@@ -31,6 +32,10 @@ class SystemSettingsForm(forms.Form):
 
     def clean_receipt_id_prefix(self):
         return self.cleaned_data["receipt_id_prefix"].strip().upper()
+    
+    def clean_staff_id_prefix(self):
+        return self.cleaned_data["staff_id_prefix"].strip().upper()
+    
 
 
 class AuditLogFilterForm(forms.Form):

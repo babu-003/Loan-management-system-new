@@ -151,6 +151,7 @@ from django.http import HttpResponse
 
 from . import pdf_generator
 from .forms import DocumentTemplateForm, GeneratedDocumentPreviewForm
+from .i18n import DEFAULT_LANGUAGE, LANGUAGE_CODES, default_body
 from .models import DocumentTemplate, DocumentType
 
 
@@ -166,7 +167,10 @@ def template_list(request):
 
 @login_required
 def template_edit(request, category):
-    template, _ = DocumentTemplate.objects.get_or_create(category=category, defaults={"body": ""})
+    template, _ = DocumentTemplate.objects.get_or_create(
+        category=category,
+        defaults={"body": default_body(category, "en"), "body_ta": default_body(category, "ta")},
+    )
     if request.method == "POST":
         form = DocumentTemplateForm(request.POST, instance=template)
         if form.is_valid():
@@ -181,22 +185,41 @@ def template_edit(request, category):
     )
 
 
-def _generate_preview_and_download(request, loan, category, title, doc_type_code, context, redirect_notice=None):
-    """Shared flow for Agreement/Closing (and used by the notice view
-    too): GET shows an editable preview pre-filled from the template;
-    POST renders the final PDF from whatever text is in the box, saves
-    it as a LoanDocument, and returns it as a download."""
-    template, _ = DocumentTemplate.objects.get_or_create(category=category, defaults={"body": ""})
-    rendered_default = pdf_generator.render_placeholders(template.body, context)
-    details_rows = pdf_generator.details_table_for(category, context)
+def _generate_preview_and_download(
+    request, loan, category, doc_type_code, build_context, build_title, redirect_notice=None,
+):
+    """Shared flow for Agreement/Closing/Notice: GET shows an editable
+    preview (Tamil by default, switchable to English) pre-filled from
+    the template; POST renders the final PDF in the chosen language
+    from whatever text is in the box, saves it as a LoanDocument, and
+    returns it as a download."""
+    template, _ = DocumentTemplate.objects.get_or_create(
+        category=category,
+        defaults={"body": default_body(category, "en"), "body_ta": default_body(category, "ta")},
+    )
+
+    bundles = {}
+    for lang in LANGUAGE_CODES:
+        context = build_context(lang)
+        bundles[lang] = {
+            "context": context,
+            "title": build_title(lang),
+            "details_rows": pdf_generator.details_table_for(category, context, lang),
+            "body": pdf_generator.render_placeholders(template.body_for(lang), context),
+        }
 
     if request.method == "POST":
         form = GeneratedDocumentPreviewForm(request.POST)
         if form.is_valid():
-            pdf_bytes = pdf_generator.render_pdf(title, details_rows, form.cleaned_data["body_text"], context)
+            lang = form.cleaned_data["language"]
+            bundle = bundles[lang]
+            pdf_bytes = pdf_generator.render_pdf(
+                bundle["title"], bundle["details_rows"], form.cleaned_data["body_text"],
+                bundle["context"], lang,
+            )
             doc_type = DocumentType.objects.get(code=doc_type_code)
             loan_document = LoanDocument(loan=loan, document_type=doc_type)
-            filename = f"{doc_type_code}_{loan.loan_number}.pdf"
+            filename = f"{doc_type_code}_{loan.loan_number}_{lang}.pdf"
             loan_document.file.save(filename, ContentFile(pdf_bytes), save=True)
             if redirect_notice:
                 redirect_notice(loan_document)
@@ -204,11 +227,21 @@ def _generate_preview_and_download(request, loan, category, title, doc_type_code
             response["Content-Disposition"] = f'attachment; filename="{filename}"'
             return response
     else:
-        form = GeneratedDocumentPreviewForm(initial={"body_text": rendered_default})
+        initial_lang = request.GET.get("lang")
+        if initial_lang not in LANGUAGE_CODES:
+            initial_lang = DEFAULT_LANGUAGE
+        form = GeneratedDocumentPreviewForm(
+            initial={"language": initial_lang, "body_text": bundles[initial_lang]["body"]}
+        )
 
     return render(
         request, "documents/generate_preview.html",
-        {"form": form, "loan": loan, "title": title, "details_rows": details_rows},
+        {
+            "form": form, "loan": loan,
+            "title": build_title("en"),
+            "bundles": bundles,
+            "bodies": {lang: b["body"] for lang, b in bundles.items()},
+        },
     )
 
 
@@ -217,9 +250,10 @@ def generate_agreement(request, loan_pk):
     from loans.models import Loan
 
     loan = get_object_or_404(Loan, pk=loan_pk)
-    context = pdf_generator.build_loan_context(loan)
     return _generate_preview_and_download(
-        request, loan, DocumentTemplate.CATEGORY_AGREEMENT, "Loan Agreement", "loan_agreement", context,
+        request, loan, DocumentTemplate.CATEGORY_AGREEMENT, "loan_agreement",
+        build_context=lambda lang: pdf_generator.build_loan_context(loan, lang),
+        build_title=lambda lang: pdf_generator.document_title("agreement", lang),
     )
 
 
@@ -228,9 +262,10 @@ def generate_closing(request, loan_pk):
     from loans.models import Loan
 
     loan = get_object_or_404(Loan, pk=loan_pk)
-    context = pdf_generator.build_closing_context(loan)
     return _generate_preview_and_download(
-        request, loan, DocumentTemplate.CATEGORY_CLOSING, "Loan Closing Document", "closing_document", context,
+        request, loan, DocumentTemplate.CATEGORY_CLOSING, "closing_document",
+        build_context=lambda lang: pdf_generator.build_closing_context(loan, lang),
+        build_title=lambda lang: pdf_generator.document_title("closing", lang),
     )
 
 
@@ -240,13 +275,14 @@ def generate_notice_pdf(request, loan_pk, notice_pk):
 
     loan = get_object_or_404(Loan, pk=loan_pk)
     notice = get_object_or_404(Notice, pk=notice_pk, loan=loan)
-    context = pdf_generator.build_notice_context(loan, notice)
 
     def link_to_notice(loan_document):
         notice.document = loan_document
         notice.save(update_fields=["document"])
 
     return _generate_preview_and_download(
-        request, loan, DocumentTemplate.CATEGORY_NOTICE, f"{notice.notice_type.name}",
-        "notice_letter", context, redirect_notice=link_to_notice,
+        request, loan, DocumentTemplate.CATEGORY_NOTICE, "notice_letter",
+        build_context=lambda lang: pdf_generator.build_notice_context(loan, notice, lang),
+        build_title=lambda lang: pdf_generator.document_title("notice", lang, notice),
+        redirect_notice=link_to_notice,
     )

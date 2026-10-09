@@ -1,5 +1,6 @@
 from django import forms
 
+from .i18n import DEFAULT_LANGUAGE, LANGUAGES
 from .models import CustomerDocument, DocumentType
 
 
@@ -92,13 +93,20 @@ from .models import DocumentTemplate  # noqa: E402
 class DocumentTemplateForm(forms.ModelForm):
     class Meta:
         model = DocumentTemplate
-        fields = ["body"]
-        widgets = {"body": forms.Textarea(attrs={"rows": 18})}
+        fields = ["body", "body_ta"]
+        widgets = {
+            "body": forms.Textarea(attrs={"rows": 14}),
+            "body_ta": forms.Textarea(attrs={"rows": 14, "lang": "ta"}),
+        }
 
 
 class GeneratedDocumentPreviewForm(forms.Form):
     """The final editable text shown before download — pre-filled with
     the template's wording after placeholder substitution, but the
     admin can tweak it for this one document without touching the
-    underlying template."""
+    underlying template. `language` picks which version is printed
+    (Tamil by default)."""
+    language = forms.ChoiceField(
+        choices=LANGUAGES, initial=DEFAULT_LANGUAGE, widget=forms.RadioSelect,
+    )
     body_text = forms.CharField(widget=forms.Textarea(attrs={"rows": 16}))

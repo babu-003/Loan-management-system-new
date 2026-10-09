@@ -66,8 +66,8 @@ class Customer(models.Model):
     customer_id = models.CharField(max_length=20, unique=True, editable=False)
 
     # --- Personal details ----------------------------------------------
-    full_name = models.CharField(max_length=150)
-    date_of_birth = models.DateField()
+    full_name = models.CharField(max_length=150,unique=True)
+    date_of_birth = models.DateField(blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     mobile = models.CharField(max_length=10, validators=[mobile_validator], unique=True)
     alternate_mobile = models.CharField(
@@ -76,19 +76,19 @@ class Customer(models.Model):
     email = models.EmailField(blank=True)
     photo = models.ImageField(upload_to="customers/photos/", blank=True, null=True)
     marital_status = models.CharField(max_length=10, choices=MARITAL_CHOICES)
-    occupation = models.CharField(max_length=100)
+    occupation = models.CharField(max_length=100,blank=True)
     monthly_income = models.DecimalField(max_digits=12, decimal_places=2)
-    father_husband_name = models.CharField(max_length=150)
+    father_husband_name = models.CharField(max_length=150,blank=True)
 
     # --- Permanent address ----------------------------------------------
-    permanent_door_no = models.CharField(max_length=50)
-    permanent_street = models.CharField(max_length=150)
-    permanent_area = models.CharField(max_length=150)
-    permanent_village_town = models.CharField(max_length=150)
-    permanent_city = models.CharField(max_length=100)
-    permanent_district = models.CharField(max_length=100)
-    permanent_state = models.CharField(max_length=100)
-    permanent_pincode = models.CharField(max_length=6, validators=[pincode_validator])
+    permanent_door_no = models.CharField(max_length=50,blank=True)
+    permanent_street = models.CharField(max_length=150,blank=True)
+    permanent_area = models.CharField(max_length=150,blank=True)
+    permanent_village_town = models.CharField(max_length=150,blank=True)
+    permanent_city = models.CharField(max_length=100,blank=True)
+    permanent_district = models.CharField(max_length=100,blank=True)
+    permanent_state = models.CharField(max_length=100,blank=True)
+    permanent_pincode = models.CharField(max_length=6,blank=True, validators=[pincode_validator])
 
     # --- Current address (mirrors permanent address fields) -------------
     same_as_permanent_address = models.BooleanField(default=True)

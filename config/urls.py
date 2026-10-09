@@ -15,6 +15,8 @@ urlpatterns = [
     path("settings/", include("core.urls")),
     path("reports/", include("reports.urls")),
     path("investments/", include("investments.urls")),
+    path("accounting/", include("accounting.urls")),
+   
 ]
 
 if settings.DEBUG:

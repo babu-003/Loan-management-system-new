@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Documents{% if show_archived %} — Archived{% endif %}</h1>
+
+<form method="get" class="card">
+  <div class="search-bar">
+    <div class="form-group">
+      <label>{{ search_form.q.label }}</label>
+      {{ search_form.q }}
+    </div>
+    <div class="form-group">
+      <label>Document Type</label>
+      {{ search_form.document_type }}
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      {{ search_form.verified_status }}
+    </div>
+    <div class="form-group" style="flex-direction:row;align-items:center;gap:6px;">
+      {{ search_form.show_archived }}
+      <label style="margin:0;">Show archived only</label>
+    </div>
+    <div class="form-group" style="align-self:flex-end;">
+      <button class="btn">Filter</button>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Document Type</th>
+        <th>ID / Number</th>
+        <th>File</th>
+        <th>Uploaded</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in page_obj %}
+        <tr>
+          <td><a href="{% url 'customers:detail' document.customer.pk %}?tab=documents">{{ document.customer.customer_id }} — {{ document.customer.full_name }}</a></td>
+          <td>{{ document.document_type.name }}</td>
+          <td>{{ document.document_number|default:"—" }}</td>
+          <td>{% if document.file %}<a href="{{ document.file.url }}" target="_blank">View</a>{% else %}<span class="muted">No file</span>{% endif %}</td>
+          <td>{{ document.uploaded_date }}</td>
+          <td><span class="badge {{ document.verified_status }}">{{ document.get_verified_status_display }}</span></td>
+          <td>
+            <a href="{% url 'documents:edit' document.pk %}" class="btn small secondary">Edit</a>
+            <form method="post" action="{% url 'documents:archive_toggle' document.pk %}" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="btn small secondary">
+                {% if document.is_archived %}Restore{% else %}Archive{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="muted">No documents found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

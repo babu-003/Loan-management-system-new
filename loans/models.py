@@ -47,13 +47,15 @@ class LoanType(models.Model):
 
 class InterestType(models.Model):
     """Admin-configurable list of interest methods. calculation_method
-    drives which formula the engine uses. Admin picks Flat or Reducing
-    Balance per loan by choosing an InterestType row when creating it."""
+    drives which formula the engine uses. Admin selects Flat Interest,
+    Reducing Balance, or Fixed Interest when creating a loan."""
     METHOD_FLAT = "flat"
     METHOD_REDUCING = "reducing"
+    METHOD_FIXED = "fixed"
     METHOD_CHOICES = [
         (METHOD_FLAT, "Flat Interest"),
         (METHOD_REDUCING, "Reducing Balance"),
+        (METHOD_FIXED, "Fixed Interest"),
     ]
 
     name = models.CharField(max_length=100)
@@ -110,7 +112,32 @@ class LoanGroup(models.Model):
 
     @property
     def member_count(self):
-        return self.loans.values("customer").distinct().count()
+        return self.members.count()
+
+
+class LoanGroupMember(models.Model):
+    """Explicit membership in a loan group.
+
+    A customer can belong to at most one group, and membership is created
+    before the member receives a loan. This keeps group membership separate
+    from the member's loan record.
+    """
+
+    group = models.ForeignKey(
+        LoanGroup, on_delete=models.CASCADE, related_name="members"
+    )
+    customer = models.OneToOneField(
+        "customers.Customer",
+        on_delete=models.PROTECT,
+        related_name="loan_group_membership",
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["joined_at", "id"]
+
+    def __str__(self):
+        return f"{self.group.group_id} — {self.customer.full_name}"
 
 
 # Day-step used only for generating due DATES on non-monthly frequencies
@@ -219,6 +246,17 @@ class Loan(models.Model):
                 "Custom interval (in days) is required when Repayment Frequency is Custom."
             )
 
+        if self.loan_group_id and self.customer_id:
+            membership = LoanGroupMember.objects.filter(customer_id=self.customer_id).first()
+            if not membership:
+                raise ValidationError({
+                    "customer": "Customer must be added to this group before creating a group loan."
+                })
+            if membership.group_id != self.loan_group_id:
+                raise ValidationError({
+                    "customer": "This customer belongs to a different loan group."
+                })
+
     def _periods_per_year(self):
         """Exact periods/year per frequency — this is what fixes the
         360-vs-365 mismatch. Monthly is exactly 12 (not a 30-day-step
@@ -257,6 +295,11 @@ class Loan(models.Model):
         elif method == InterestType.METHOD_REDUCING:
             _, total_interest = self._reducing_balance_schedule()
             self.total_interest = total_interest
+            self.total_payable = self.principal_amount + self.total_interest
+        elif method == InterestType.METHOD_FIXED:
+            # For this method, 1.6 means 1.6 × 100 = 160 currency units
+            # of interest on EVERY installment; it is not a percentage.
+            self.total_interest = (self.interest_rate * Decimal("100") * self.number_of_installments).quantize(Decimal("0.01"))
             self.total_payable = self.principal_amount + self.total_interest
         else:
             raise NotImplementedError(f"No calculation engine implemented for '{method}'.")
@@ -318,15 +361,33 @@ class Loan(models.Model):
             rows.append((amount - interest_component, interest_component, amount))
         return rows
 
+    def _fixed_interest_schedule_rows(self):
+        """Return installments with the full fixed interest amount on each
+        row. Only principal is divided across installments; interest is
+        never split or redistributed."""
+        n = self.number_of_installments
+        fixed_interest = (self.interest_rate * Decimal("100")).quantize(Decimal("0.01"))
+        base_principal = (self.principal_amount / n).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        rows = []
+        principal_remaining = self.principal_amount
+        for index in range(n):
+            principal_component = (
+                principal_remaining if index == n - 1 else base_principal
+            )
+            amount = principal_component + fixed_interest
+            rows.append((principal_component, fixed_interest, amount))
+            principal_remaining -= principal_component
+        return rows
+
     def generate_installment_schedule(self):
-        """Creates N installments, either equal (Flat) or amortizing
-        (Reducing Balance). Both get a principal/interest split stored
-        per row for consistent display."""
+        """Creates N installments using the selected interest method."""
         method = self.interest_type.calculation_method
         installments = []
 
         if method == InterestType.METHOD_REDUCING:
             rows, _ = self._reducing_balance_schedule()
+        elif method == InterestType.METHOD_FIXED:
+            rows = self._fixed_interest_schedule_rows()
         else:
             rows = self._flat_schedule_rows()
 

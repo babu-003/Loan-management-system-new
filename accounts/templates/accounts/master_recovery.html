@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:560px; margin:35px auto;">
+  <div class="card">
+    <h1>Master Account Recovery</h1>
+    <p class="muted" style="margin-bottom:22px;">
+      Use this only when the normal recovery code is unavailable. The master recovery code is kept separately from this application.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-grid">
+        {% for field in form.visible_fields %}
+          <div class="form-group full">
+            <label>{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+            {{ field.errors }}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if form.non_field_errors %}
+        <div style="color:#a6402f; margin-top:12px;">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <button class="btn" style="margin-top:16px;">Reset Username &amp; Password</button>
+      <a href="{% url 'accounts:recover_account' %}" class="btn secondary" style="margin-top:10px; display:inline-block;">Use Personal Recovery Code</a>
+      <a href="{% url 'accounts:login' %}" class="btn secondary" style="margin-top:10px; display:inline-block;">Back to Login</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

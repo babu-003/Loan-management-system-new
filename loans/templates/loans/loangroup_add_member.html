@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;">
+  <div>
+    <h1>Add Member</h1>
+    <p class="muted">{{ group.group_id }} — {{ group.group_name }}</p>
+  </div>
+  <a href="{% url 'loans:group_detail' group.pk %}" class="btn secondary">Back to Group</a>
+</div>
+
+<div class="card">
+  <h3>Add Existing Customer</h3>
+  <p class="muted">Only customers who are not already in any loan group are shown.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>{{ form.customer.label }} *</label>
+        {{ form.customer }}
+        {{ form.customer.errors }}
+      </div>
+    </div>
+    <button class="btn" style="margin-top:10px;">Add Member &amp; Create Loan</button>
+  </form>
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <h3>New Customer</h3>
+  <p class="muted">Create a new customer and automatically add them to this group.</p>
+  <a href="{% url 'customers:add_group_member' group.pk %}" class="btn secondary">+ Add New Member</a>
+</div>
+{% endblock %}

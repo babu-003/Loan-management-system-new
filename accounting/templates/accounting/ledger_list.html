@@ -1,0 +1,225 @@
+{% extends "accounting/base_accounting.html" %}
+{% block accounting_content %}
+
+<div class="ledger-page">
+
+    <div class="page-header">
+        <div>
+            <h1>Ledger</h1>
+            <p>View and manage all accounting ledgers.</p>
+        </div>
+    </div>
+
+
+    <div class="ledger-groups">
+
+        {% for group_name, group_accounts in grouped_accounts.items %}
+
+        {% if group_accounts %}
+
+        <details class="ledger-group">
+
+            <summary>
+                <span class="group-title">
+                    {{ group_name }}
+                </span>
+
+                <span class="group-count">
+                    {{ group_accounts|length }}
+                </span>
+            </summary>
+
+
+            <div class="ledger-items">
+
+                {% for account in group_accounts %}
+
+                <a href="{% url 'accounting:ledger_detail' account.pk %}" class="ledger-item">
+
+                    <div class="ledger-info">
+
+                        <div class="ledger-name">
+                            {{ account.name }}
+                        </div>
+
+                        {% if account.code %}
+                        <div class="ledger-code">
+                            {{ account.code }}
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="ledger-balance">
+                        ₹{{ account.balance|floatformat:2 }}
+                    </div>
+
+                </a>
+
+                {% endfor %}
+
+            </div>
+
+        </details>
+
+        {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<style>
+    .ledger-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 25px;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 23px;
+    }
+
+    .page-header p {
+        margin-top: 6px;
+        color: #666;
+    }
+
+
+    /* GROUP */
+
+    .ledger-group {
+        background: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+
+
+    /* GROUP HEADER */
+
+    .ledger-group summary {
+        list-style: none;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 16px 20px;
+
+        font-weight: 500;
+        font-size: 16px;
+
+        background: #f8f8f8;
+
+        user-select: none;
+    }
+
+
+    /* Remove default arrow */
+
+    .ledger-group summary::-webkit-details-marker {
+        display: none;
+    }
+
+
+    /* Custom arrow */
+
+    .group-title::before {
+        content: "▶";
+        display: inline-block;
+        margin-right: 10px;
+        font-size: 11px;
+        transition: transform 0.2s ease;
+    }
+
+
+    /* Rotate arrow when opened */
+
+    .ledger-group[open] .group-title::before {
+        transform: rotate(90deg);
+    }
+
+
+    .group-count {
+        min-width: 25px;
+        height: 25px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+        
+        background: #177e02;
+        color: white;
+
+        font-size: 13px;
+    }
+
+
+    /* LEDGER ITEMS */
+
+    .ledger-items {
+        border-top: 1px solid #eeeeee;
+    }
+
+
+    .ledger-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 15px 20px;
+
+        text-decoration: none;
+        color: #222;
+
+        border-bottom: 1px solid #eeeeee;
+
+        transition: background 0.15s ease;
+    }
+
+
+    .ledger-item:last-child {
+        border-bottom: none;
+    }
+
+
+    .ledger-item:hover {
+        background: #f5faf3;
+    }
+
+
+    .ledger-name {
+        font-weight: 500;
+        font-size: 15px;
+        text-decoration: underline;
+        color: #177e02;
+    }
+
+
+    .ledger-code {
+        margin-top: 3px;
+        color: #888;
+        font-size: 12px;
+    }
+
+
+    .ledger-balance {
+        font-weight: 600;
+        font-size: 15px;
+    }
+</style>
+
+{% endblock %}

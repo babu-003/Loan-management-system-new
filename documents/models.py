@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
+from .i18n import default_body
+
 ALLOWED_DOCUMENT_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"]
 MAX_DOCUMENT_FILE_SIZE_MB = 10
 
@@ -227,7 +229,15 @@ class DocumentTemplate(models.Model):
     ]
 
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, unique=True)
-    body = models.TextField()
+    body = models.TextField(verbose_name="English text")
+    body_ta = models.TextField(blank=True, default="", verbose_name="Tamil text (தமிழ்)")
+
+    def body_for(self, lang):
+        """The wording for the requested language. Falls back to the
+        built-in default if that language's text has been left empty."""
+        if lang == "ta":
+            return self.body_ta or default_body(self.category, "ta")
+        return self.body or default_body(self.category, "en")
 
     def __str__(self):
         return self.get_category_display()

@@ -14,6 +14,7 @@ DEFAULTS = {
     "customer_id_prefix": "CUS",
     "loan_id_prefix": "LN",
     "group_id_prefix": "GRP",
+    "staff_id_prefix": "STF",
     "receipt_id_prefix": "REC",
     "id_number_padding": "6",
 }

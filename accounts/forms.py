@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 
-from .models import AdminUser
+from .models import AdminUser, MasterRecovery
 
 
 class AdminProfileForm(forms.ModelForm):
@@ -74,14 +74,15 @@ class AccountRecoveryForm(forms.Form):
             self.add_error("confirm_password", "Passwords do not match.")
 
         username = (cleaned.get("new_username") or "").strip()
-        if username:
+        current_username = (cleaned.get("current_username") or "").strip()
+        if username and (not current_username or username.lower() != current_username.lower()):
             existing = AdminUser.objects.filter(username__iexact=username).first()
             if existing:
                 self.add_error("new_username", "That username is already in use.")
         return cleaned
 
     def find_user(self):
-        """Return the account whose recovery code matches this form."""
+        """Return the account whose personal recovery code matches."""
         code = self.cleaned_data["recovery_code"]
         supplied_username = (self.cleaned_data.get("current_username") or "").strip()
 
@@ -93,4 +94,30 @@ class AccountRecoveryForm(forms.Form):
         for user in candidates:
             if user.recovery_code_hash and check_password(code, user.recovery_code_hash):
                 return user
+        return None
+
+
+class MasterAccountRecoveryForm(AccountRecoveryForm):
+    recovery_code = forms.CharField(
+        label="Master Recovery Code",
+        max_length=64,
+        widget=forms.PasswordInput(attrs={"autocomplete": "off"}),
+        help_text="Enter the master code supplied separately by the application owner/developer.",
+    )
+
+    def find_user(self):
+        master = MasterRecovery.objects.first()
+        if not master or not master.code_hash or not master.check_code(self.cleaned_data["recovery_code"]):
+            return None
+
+        supplied_username = (self.cleaned_data.get("current_username") or "").strip()
+        if supplied_username:
+            return AdminUser.objects.filter(username__iexact=supplied_username, is_active=True).first()
+
+        # With one active admin, the master code alone is enough even when
+        # the username has also been forgotten. If multiple admins exist,
+        # require the username so the master code cannot choose an account.
+        active_users = AdminUser.objects.filter(is_active=True)
+        if active_users.count() == 1:
+            return active_users.first()
         return None

@@ -5,7 +5,14 @@
     <h1>{{ customer.full_name }}</h1>
     <p class="muted">{{ customer.customer_id }} · {{ customer.mobile }} · <span class="badge {{ customer.status }}">{{ customer.get_status_display }}</span></p>
   </div>
-  <a href="{% url 'customers:edit' customer.pk %}" class="btn secondary">Edit Customer</a>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+    <a href="{% url 'customers:edit' customer.pk %}" class="btn secondary">Edit Customer</a>
+    {% if can_delete_customer %}
+      <a href="{% url 'customers:delete' customer.pk %}" class="btn danger" onclick="return confirm('Open the password confirmation page to delete this customer?');">Delete Customer</a>
+    {% else %}
+      <span class="muted" title="Delete all loan records before deleting this customer.">Delete Customer (delete loans first)</span>
+    {% endif %}
+  </div>
 </div>
 
 <div class="tabs">
@@ -143,7 +150,10 @@
             <td>₹{{ loan.principal_amount }}</td>
             <td>₹{{ loan.total_outstanding }}</td>
             <td><span class="badge {{ loan.status }}">{{ loan.get_status_display }}</span></td>
-            <td><a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a></td>
+            <td style="white-space:nowrap;">
+              <a href="{% url 'loans:detail' loan.pk %}" class="btn small secondary">View</a>
+              <a href="{% url 'loans:delete' loan.pk %}" class="btn small danger">Delete</a>
+            </td>
           </tr>
         {% empty %}<tr><td colspan="5" class="muted">No loans for this customer yet.</td></tr>{% endfor %}
       </tbody>

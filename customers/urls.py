@@ -9,6 +9,7 @@ urlpatterns = [
     path("add/", views.CustomerWizard.as_view(), name="add"),
     path("<int:pk>/", views.CustomerDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.CustomerUpdateView.as_view(), name="edit"),
+    path("<int:pk>/delete/", views.customer_delete, name="delete"),
     path("<int:pk>/documents/add/", views.add_customer_document, name="add_document"),
     path(
         "<int:pk>/documents/<int:document_id>/verify/",

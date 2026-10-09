@@ -62,7 +62,7 @@ class PersonalDetailsForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Everything compulsory except the two fields that are genuinely
         # optional in normal practice (a second mobile number and email).
-        optional_fields = {"alternate_mobile", "email", "photo"}
+        optional_fields = {"alternate_mobile", "email", "photo","occupation","date_of_birth","father_husband_name"}
         for field_name, field in self.fields.items():
             if field_name not in optional_fields and field_name != "customer_category":
                 field.required = True
@@ -104,7 +104,7 @@ class AddressForm(forms.ModelForm):
             "permanent_village_town", "permanent_city", "permanent_district",
             "permanent_state", "permanent_pincode",
         ]:
-            self.fields[field_name].required = True
+            self.fields[field_name].required = False
         for field_name in [
             "current_door_no", "current_street", "current_area",
             "current_village_town", "current_city", "current_district",
@@ -113,7 +113,9 @@ class AddressForm(forms.ModelForm):
             self.fields[field_name].required = False
 
     def clean(self):
-        cleaned_data = super().clean()
+       return super().clean()
+    #the below content is hiiden bcz of the current addess feild stay optional all time
+       ''' cleaned_data = super().clean()
         same_as_permanent = cleaned_data.get("same_as_permanent_address")
         if not same_as_permanent:
             current_fields = [
@@ -128,7 +130,8 @@ class AddressForm(forms.ModelForm):
                         "Required because the current address is different "
                         "from the permanent address.",
                     )
-        return cleaned_data
+        return cleaned_data'''
+        
 
 
 class ReferenceForm(forms.Form):
@@ -141,7 +144,8 @@ class ReferenceForm(forms.Form):
 class BaseReferenceFormSet(forms.BaseFormSet):
     def clean(self):
         super().clean()
-        if any(self.errors):
+        return#remove return if the content below want ,the content below is hidden bcz of reference stay optional
+        '''if any(self.errors):
             return
         filled_forms = [
             form for form in self.forms
@@ -150,15 +154,15 @@ class BaseReferenceFormSet(forms.BaseFormSet):
         if not filled_forms:
             raise forms.ValidationError(
                 "At least one reference/family contact is required."
-            )
+            )'''
 
 
 ReferenceFormSet = formset_factory(
     ReferenceForm,
     formset=BaseReferenceFormSet,
     extra=1,
-    min_num=1,
-    validate_min=True,
+    min_num=0,
+    validate_min=False,
     can_delete=True,
 )
 
@@ -178,7 +182,7 @@ class BankDetailForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.required = True
+            field.required = False
 
 
 class DocumentForm(forms.Form):
@@ -225,7 +229,8 @@ class DocumentForm(forms.Form):
 class BaseDocumentFormSet(forms.BaseFormSet):
     def clean(self):
         super().clean()
-        if any(self.errors):
+        return#remove return if the content below want ,the content below is hidden bcz of reference stay optional
+        '''if any(self.errors):
             return
         filled_forms = [
             form for form in self.forms
@@ -234,15 +239,15 @@ class BaseDocumentFormSet(forms.BaseFormSet):
         if not filled_forms:
             raise forms.ValidationError(
                 "At least one KYC document (file or ID number) is required."
-            )
+            )'''
 
 
 DocumentFormSet = formset_factory(
     DocumentForm,
     formset=BaseDocumentFormSet,
     extra=1,
-    min_num=1,
-    validate_min=True,
+    min_num=0,
+    validate_min=False,
     can_delete=True,
 )
 

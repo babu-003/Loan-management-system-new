@@ -27,6 +27,9 @@
 
       <button class="btn" style="margin-top:16px;">Change Username &amp; Password</button>
       <a href="{% url 'accounts:login' %}" class="btn secondary" style="margin-top:10px; display:inline-block;">Back to Login</a>
+      <div style="margin-top:18px; text-align:center;">
+        <a href="{% url 'accounts:master_recovery' %}" style="color:#0e5500; font-size:13px; text-decoration:none;">Forgot the recovery code? Use Master Recovery</a>
+      </div>
     </form>
   </div>
 </div>

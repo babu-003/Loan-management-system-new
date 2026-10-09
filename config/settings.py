@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'investments',
     'public',
     'staff',
+    'accounting.apps.AccountingConfig',
 ]
 
 MIDDLEWARE = [

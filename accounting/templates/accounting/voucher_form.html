@@ -1,0 +1,14 @@
+{% extends "accounting/base_accounting.html" %}
+{% block title %}Add Voucher{% endblock %}
+{% block accounting_content %}
+<h1>Add Voucher</h1>
+<div class="card"><form method="post">{% csrf_token %}
+  {% for field in form %}<div class="form-group"><label>{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="error">{{ e }}</div>{% endfor %}</div>{% endfor %}
+  <button class="btn" type="submit">Save Voucher</button>
+</form></div>
+<script>
+const mode=document.getElementById('id_payment_mode'), tx=document.getElementById('id_transaction_id');
+function syncTx(){if(!mode||!tx)return; const online=mode.value==='online'; tx.closest('.form-group').style.display=online?'':'none'; if(!online)tx.value='';}
+mode?.addEventListener('change',syncTx); syncTx();
+</script>
+{% endblock %}

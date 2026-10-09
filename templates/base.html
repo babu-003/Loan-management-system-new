@@ -28,7 +28,18 @@
           <a href="{% url 'loans:list' %}">Loans</a>
           <a href="{% url 'loans:calculator' %}">Loan Calculator</a>
           <a href="{% url 'payments:list' %}">Payments</a>
-          <a href="{% url 'investments:investor_list' %}">Investments</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <span class="nav-dropdown-toggle">Accounting ▾</span>
+        <div class="nav-dropdown-menu">
+          <a href="{% url 'accounting:dashboard' %}">Accounting Dashboard</a>
+          <a href="{% url 'accounting:voucher_list' %}">Vouchers</a>
+          <a href="{% url 'accounting:voucher_add' %}">+ Add Voucher</a>
+          <a href="{% url 'accounting:ledger_list' %}">Ledgers</a>
+          <a href="{% url 'accounting:categories' %}">Voucher Categories</a>
+          <a href="{% url 'investments:investor_list' %}">Investment</a>
         </div>
       </div>
 

@@ -1,10 +1,11 @@
 from decimal import Decimal
 import math
-
+from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -126,6 +127,102 @@ def loan_detail(request, pk):
 
 
 @login_required
+def repayment_card_pdf(request, pk):
+    """Download a printable customer repayment card for this loan."""
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+    loan = get_object_or_404(
+        Loan.objects.select_related("customer", "loan_type", "interest_type"), pk=pk
+    )
+    installments = list(loan.installments.all().order_by("installment_number"))
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4, rightMargin=14 * mm, leftMargin=14 * mm,
+        topMargin=12 * mm, bottomMargin=12 * mm,
+        title=f"Repayment Card - {loan.loan_number}",
+    )
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="CardTitle", parent=styles["Title"], fontSize=16, leading=20,
+        alignment=TA_CENTER, spaceAfter=5 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name="SmallInfo", parent=styles["Normal"], fontSize=9, leading=13,
+    ))
+    story = [Paragraph("CUSTOMER LOAN REPAYMENT CARD", styles["CardTitle"])]
+
+    customer = loan.customer
+    info_rows = [
+        [Paragraph(f"<b>Customer:</b> {customer.full_name}", styles["SmallInfo"]),
+         Paragraph(f"<b>Customer ID:</b> {customer.customer_id}", styles["SmallInfo"])],
+        [Paragraph(f"<b>Mobile:</b> {customer.mobile}", styles["SmallInfo"]),
+         Paragraph(f"<b>Loan No.:</b> {loan.loan_number}", styles["SmallInfo"])],
+        [Paragraph(f"<b>Principal:</b> ₹{loan.principal_amount:,.2f}", styles["SmallInfo"]),
+         Paragraph(f"<b>Installments:</b> {loan.number_of_installments}", styles["SmallInfo"])],
+    ]
+    info = Table(info_rows, colWidths=[88 * mm, 88 * mm])
+    info.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BOX", (0, 0), (-1, -1), 0.7, colors.black),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.lightgrey),
+        ("LEFTPADDING", (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.extend([info, Spacer(1, 5 * mm)])
+
+    data = [["Installment", "Due Date", "Principal Amount (₹)", "Amount Paid (₹)", "Customer Signature"]]
+    for inst in installments:
+        data.append([
+            str(inst.installment_number),
+            inst.due_date.strftime("%d-%m-%Y"),
+            f"{inst.principal_component:,.2f}",
+            "",  # left blank for manual entry by collector/customer
+            "",  # left blank for handwritten signature
+        ])
+    if not installments:
+        data.append(["No installments generated", "", "", "", ""])
+
+    schedule = Table(
+        data,
+        colWidths=[23 * mm, 30 * mm, 39 * mm, 37 * mm, 47 * mm],
+        repeatRows=1,
+        rowHeights=[11 * mm] + [13 * mm] * max(len(data) - 1, 1),
+    )
+    schedule.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e9eef5")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("ALIGN", (0, 0), (0, -1), "CENTER"),
+        ("ALIGN", (2, 1), (3, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("GRID", (0, 0), (-1, -1), 0.65, colors.black),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    story.append(schedule)
+    story.append(Spacer(1, 5 * mm))
+    story.append(Paragraph(
+        "Keep this card safely. Write the amount received and sign for each installment when payment is collected.",
+        styles["SmallInfo"],
+    ))
+    doc.build(story)
+    response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="repayment_card_{loan.loan_number}.pdf"'
+    return response
+
+
+@login_required
 def installment_edit_due_date(request, pk, installment_id):
     installment = get_object_or_404(Installment, pk=installment_id, loan_id=pk)
     if request.method == "POST":
@@ -224,3 +321,48 @@ def loan_calculator(request):
     else:
         form = LoanCalculatorForm()
     return render(request, "loans/loan_calculator.html", {"form": form, "result": result})
+
+
+@login_required
+def loan_delete(request, pk):
+    """Password-confirmed loan deletion. Loans with recorded payments are
+    blocked to preserve financial history and payment/audit integrity.
+    """
+    loan = get_object_or_404(Loan.objects.select_related("customer"), pk=pk)
+    has_payments = loan.payments.exists()
+
+    if request.method == "POST":
+        if has_payments:
+            messages.error(
+                request,
+                "This loan has recorded payments and cannot be deleted. "
+                "Preserve its financial history instead of deleting it.",
+            )
+            return redirect(f"{reverse('customers:detail', args=[loan.customer_id])}?tab=loans")
+
+        password = request.POST.get("password", "")
+        if not password or not request.user.check_password(password):
+            messages.error(request, "Incorrect login password. The loan was not deleted.")
+            return render(
+                request, "loans/loan_delete_confirm.html",
+                {"loan": loan, "has_payments": has_payments}, status=400,
+            )
+
+        customer_id = loan.customer_id
+        loan_label = loan.loan_number
+        try:
+            loan.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "This loan is linked to protected financial records and cannot be deleted.",
+            )
+            return redirect(f"{reverse('customers:detail', args=[customer_id])}?tab=loans")
+
+        messages.success(request, f"Loan {loan_label} was deleted.")
+        return redirect(f"{reverse('customers:detail', args=[customer_id])}?tab=loans")
+
+    return render(
+        request, "loans/loan_delete_confirm.html",
+        {"loan": loan, "has_payments": has_payments},
+    )

@@ -25,9 +25,21 @@
         const transactionInput = document.getElementById("id_transaction_id");
         function updateTransactionField() {
           const online = mode && mode.value === "online";
-          if (transactionField) transactionField.style.display = online ? "" : "none";
-          if (transactionInput) transactionInput.required = online;
-          if (!online && transactionInput) transactionInput.value = "";
+
+          // Show only for online payments
+          if (transactionField) {
+            transactionField.style.display = online ? "" : "none";
+          }
+
+          // Transaction ID is NEVER required
+          if (transactionInput) {
+            transactionInput.required = false;
+          }
+
+          // Clear it when switching to cash
+          if (!online && transactionInput) {
+            transactionInput.value = "";
+          }
         }
         if (mode) {
           mode.addEventListener("change", updateTransactionField);

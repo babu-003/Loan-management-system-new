@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+  <a class="btn secondary" href="{% url 'accounting:dashboard' %}">Accounting</a>
+  <a class="btn secondary" href="{% url 'accounting:voucher_list' %}">Vouchers</a>
+  <a class="btn" href="{% url 'accounting:voucher_add' %}">+ Add Voucher</a>
+  <a class="btn secondary" href="{% url 'accounting:ledger_list' %}">Ledgers</a>
+  <a class="btn secondary" href="{% url 'accounting:categories' %}">Categories</a>
+  <a class="btn secondary" href="{% url 'investments:investor_list' %}">Investment</a>
+</div>
+{% block accounting_content %}{% endblock %}
+{% endblock %}

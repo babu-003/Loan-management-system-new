@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import InterestType, Installment, Loan, LoanGroup, LoanType
+from customers.models import Customer
 from staff.models import Staff
 
 
@@ -8,6 +9,22 @@ class LoanGroupForm(forms.ModelForm):
     class Meta:
         model = LoanGroup
         fields = ["group_name", "description"]
+
+
+class LoanGroupMemberForm(forms.Form):
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.none(),
+        label="Existing Customer",
+    )
+
+    def __init__(self, *args, group=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if group is not None:
+            self.fields["customer"].queryset = (
+                Customer.objects
+                .filter(status=Customer.STATUS_ACTIVE, loan_group_membership__isnull=True)
+                .order_by("full_name")
+            )
 
 
 class LoanForm(forms.ModelForm):
@@ -29,10 +46,28 @@ class LoanForm(forms.ModelForm):
             "remarks": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, group=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["loan_type"].queryset = LoanType.objects.filter(is_active=True)
+
+        if group is not None:
+            self.fields["loan_group"].queryset = LoanGroup.objects.filter(pk=group.pk)
+            self.fields["loan_group"].initial = group.pk
+            self.fields["loan_group"].disabled = True
+            self.fields["customer"].queryset = (
+                Customer.objects
+                .filter(
+                    status=Customer.STATUS_ACTIVE,
+                    loan_group_membership__group=group,
+                )
+                .order_by("full_name")
+            )
+        else:
+            self.fields["customer"].queryset = Customer.objects.filter(
+                status=Customer.STATUS_ACTIVE
+            ).order_by("full_name")
         self.fields["interest_type"].queryset = InterestType.objects.filter(is_active=True)
+        self.fields["interest_rate"].label = "Interest Rate (% p.a.)"
         self.fields["loan_group"].required = False
         self.fields["assigned_staff"].required = False
         self.fields["assigned_staff"].queryset = Staff.objects.filter(

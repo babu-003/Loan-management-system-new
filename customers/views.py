@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -211,6 +212,7 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
         context["bank_detail"] = getattr(customer, "bank_detail", None)
         context["active_tab"] = self.request.GET.get("tab", "overview")
         context["loans"] = customer.loans.all()
+        context["can_delete_customer"] = not customer.loans.exists()
         context["active_loan_count"] = customer.loans.filter(status="active").count()
         context["total_outstanding_amount"] = sum(
             (loan.total_outstanding for loan in customer.loans.filter(status="active")),
@@ -298,3 +300,49 @@ def verify_customer_document(request, pk, document_id):
         document.save(update_fields=["verified_status", "verified_date"])
         messages.success(request, f"Document marked as {new_status}.")
     return redirect(f"{reverse('customers:detail', args=[pk])}?tab=documents")
+
+
+@login_required
+def customer_delete(request, pk):
+    """Password-confirmed deletion, available from the customer profile only.
+
+    A customer cannot be deleted while any loan record still references them.
+    This includes closed/cancelled loans so the user must explicitly remove
+    those loan records first.
+    """
+    customer = get_object_or_404(Customer, pk=pk)
+    has_loans = customer.loans.exists()
+
+    if request.method == "POST":
+        if has_loans:
+            messages.error(
+                request,
+                "This customer still has loan records. Delete all of their loans first.",
+            )
+            return redirect(f"{reverse('customers:detail', args=[customer.pk])}?tab=loans")
+
+        password = request.POST.get("password", "")
+        if not password or not request.user.check_password(password):
+            messages.error(request, "Incorrect login password. The customer was not deleted.")
+            return render(
+                request, "customers/customer_delete_confirm.html",
+                {"customer": customer, "has_loans": has_loans}, status=400,
+            )
+
+        customer_label = f"{customer.customer_id} — {customer.full_name}"
+        try:
+            customer.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "This customer is linked to protected records and cannot be deleted.",
+            )
+            return redirect("customers:detail", pk=customer.pk)
+
+        messages.success(request, f"Customer {customer_label} was deleted.")
+        return redirect("customers:list")
+
+    return render(
+        request, "customers/customer_delete_confirm.html",
+        {"customer": customer, "has_loans": has_loans},
+    )
