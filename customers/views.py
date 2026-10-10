@@ -95,7 +95,20 @@ class CustomerWizard(LoginRequiredMixin, SessionWizardView):
             setattr(customer, field_name, value)
         customer.full_clean(exclude=["customer_id"])
         customer.save()
-
+        # If customer is created from inside a loan group, add them to that group.
+        group_pk = self.kwargs.get("group_pk")
+        group = None
+        if group_pk:
+            from loans.models import LoanGroup, LoanGroupMember
+            group = get_object_or_404(
+                LoanGroup,
+                pk=group_pk,
+                status=LoanGroup.STATUS_ACTIVE,
+                )
+            LoanGroupMember.objects.get_or_create(
+                group=group,
+                customer=customer,
+                )
         for reference_data in reference_formset.cleaned_data:
             if not reference_data or reference_data.get("DELETE"):
                 continue
@@ -135,6 +148,13 @@ class CustomerWizard(LoginRequiredMixin, SessionWizardView):
                 f"Customer {customer.customer_id} created. You can now create "
                 f"an individual loan for them.",
             )
+        if group:
+            messages.success(
+                self.request,
+                f"Customer {customer.customer_id} created and added to "
+                f"group {group.group_name}.",
+                )
+            return redirect("loans:group_detail", pk=group.pk)
         return redirect(reverse("customers:detail", args=[customer.pk]))
 
 

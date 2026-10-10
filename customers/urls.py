@@ -16,4 +16,9 @@ urlpatterns = [
         views.verify_customer_document,
         name="verify_document",
     ),
+    path(
+    "add/group-member/<int:group_pk>/",
+    views.CustomerWizard.as_view(),
+    name="add_group_member",
+),
 ]

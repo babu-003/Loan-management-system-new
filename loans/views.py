@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import InstallmentDueDateForm, LoanForm, LoanGroupForm, LoanSearchForm , LoanGroupMemberForm
+from .forms import InstallmentDueDateForm, LoanForm, LoanGroupForm, LoanSearchForm , LoanGroupMemberForm,LoanCalculatorForm
 from .models import Installment, Loan, LoanGroup,LoanGroupMember
 
 DONUT_RADIUS = 60
